@@ -14,6 +14,14 @@ CREATE TABLE productos (
     precio DECIMAL(10,2) NOT NULL
 );
 
+CREATE TABLE usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    nombre_completo VARCHAR(150) NOT NULL,
+    rol ENUM('ADMIN', 'ENCARGADO', 'OPERADOR') DEFAULT 'OPERADOR'
+);
+
 CREATE TABLE movimientos_inventario (
     id INT AUTO_INCREMENT PRIMARY KEY,
     fecha DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -48,11 +56,4 @@ CREATE TABLE auditoria (
 );
 
 
-CREATE TABLE usuarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    nombre_completo VARCHAR(150) NOT NULL,
-    rol ENUM('ADMIN', 'ENCARGADO', 'OPERADOR') DEFAULT 'OPERADOR'
-);
 

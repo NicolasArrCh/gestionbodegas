@@ -12,6 +12,13 @@ INSERT INTO productos (nombre, categoria, stock, precio) VALUES
 ('Silla Gamer Cougar Armor', 'Muebles', 15, 1250000.00),
 ('Disco SSD 1TB Samsung', 'Almacenamiento', 40, 380000.00);
 
+INSERT INTO usuarios (username, password, nombre_completo, rol) VALUES
+('cgomez', '1234', 'Carlos Gómez', 'ADMIN'),
+('lperez', '1234', 'Laura Pérez', 'ENCARGADO'),
+('matorres', '1234', 'Mariana Torres', 'OPERADOR'),
+('jhernandez', '1234', 'Julián Hernández', 'ENCARGADO'),
+('arios', '1234', 'Andrés Ríos', 'OPERADOR');
+
 INSERT INTO movimientos_inventario (tipo, usuario_id, bodega_origen_id, bodega_destino_id) VALUES
 ('ENTRADA', 1, NULL, 1),         -- Carlos Gómez ingresa productos a Bodega Central
 ('SALIDA', 2, 2, NULL),          -- Laura Pérez retira productos de Bodega Norte
@@ -35,9 +42,3 @@ INSERT INTO auditoria (tipo_operacion, usuario_id, entidad_afectada, valor_anter
 ('INSERT', 3, 'Producto', NULL, '{"id":6,"nombre":"Laptop Dell","precio":3500000}'),
 ('UPDATE', 4, 'Bodega', '{"id":5,"encargado":"Julián Hernández"}', '{"id":5,"encargado":"Luis Pardo"}');
 
-INSERT INTO usuarios (username, password, nombre_completo, rol) VALUES
-('cgomez', '1234', 'Carlos Gómez', 'ADMIN'),
-('lperez', '1234', 'Laura Pérez', 'ENCARGADO'),
-('matorres', '1234', 'Mariana Torres', 'OPERADOR'),
-('jhernandez', '1234', 'Julián Hernández', 'ENCARGADO'),
-('arios', '1234', 'Andrés Ríos', 'OPERADOR');
