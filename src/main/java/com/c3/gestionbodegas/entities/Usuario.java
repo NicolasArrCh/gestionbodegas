@@ -27,18 +27,12 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotBlank(message = "El nombre de usuario no puede estar vacío")
-    @Size(max = 100, message = "El nombre de usuario no debe exceder los 100 caracteres")
     @Column(nullable = false, unique = true, length = 100)
     private String username;
 
-    @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 6, max = 255, message = "La contraseña debe tener entre 6 y 255 digitos")
     @Column(nullable = false, length = 255)
     private String password;
 
-    @NotBlank(message = "El nombre completo es obligatorio")
-    @Size(max = 150, message = "El nombre no debe exceder los 150 caracteres")
     @Column(nullable = false, length = 150)
     private String nombreCompleto;
 

@@ -27,23 +27,17 @@ public class Bodega {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotBlank(message = "El nombre de la bodega no puede estar vacío")
-    @Size(max = 100, message = "El nombre no debe exceder los 100 caracteres")
     @Column(nullable = false, length = 100)
     private String nombre;
 
-    @NotBlank(message = "La ubicación es obligatoria")
-    @Size(max = 150, message = "La ubicación no debe exceder los 150 caracteres")
     @Column(nullable = false, length = 150)
     private String ubicacion;
 
-    @Min(value = 0, message = "La capacidad no puede ser negativa")
     @Column(nullable = false)
     private Integer capacidad;
 
-    @NotBlank(message = "Debe especificarse un encargado")
-    @Size(max = 100, message = "El nombre del encargado no debe exceder los 100 caracteres")
     @Column(nullable = false, length = 100)
     private String encargado;
     
 }
+
