@@ -26,21 +26,21 @@ public class UsuarioController {
 
     // Devolver todas los usuarios
     @GetMapping
-    public ResponseEntity<List<Usuario>> obtenerTodoUsuario() {
+    public ResponseEntity<Usuario> obtenerTodoUsuario() {
         List<Usuario> usuario = usuarioService.obtenerTodoUsuario();
         return usuario.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(usuario);
     }
 
     // Buscar por el nombre
     @GetMapping("/buscar")
-    public ResponseEntity<List<Usuario>> buscarPorNombre(@RequestParam String nombre) {
+    public ResponseEntity<Usuario> buscarPorNombre(@RequestParam String nombre) {
         List<Usuario> usuario = usuarioService.buscarPorNombre(nombre);
         return usuario.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(usuario);
     }
 
     // Buscar por ID
      @GetMapping("/{id}")
-    public ResponseEntity<List<Usuario>> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<Usuario> buscarPorId(@PathVariable Long id) {
         Usuario usuario = usuarioService.buscarPorId(id);
         return usuario != null ? ResponseEntity.ok(usuario) : ResponseEntity.ok(usuario);
     }
@@ -55,12 +55,8 @@ public class UsuarioController {
     // Eliminar por id
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id) {
-        if (usuarioService.obtenerTodoUsuario().stream().noneMatch(a -> a.getId().equals(id))) {
-            return ResponseEntity.notFound().build();
-        }
-
-        usuarioService.eliminarUsuario(id);
-        return ResponseEntity.noContent().build();
+        boolean eliminado = usuarioService.eliminarUsuario(id);
+        return eliminado ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
     // Endpoind del patch

@@ -22,45 +22,41 @@ import com.c3.gestionbodegas.services.BodegaService;
 public class BodegaController {
 
     @Autowired
-    private final BodegaService bodegaService;
+    private BodegaService bodegaService;
 
     // Devolver todas las bodegas
     @GetMapping
-    public ResponseEntity<List<Bodega>> obtenerTodoBodega() {
+    public ResponseEntity<Bodega> obtenerTodoBodega() {
         List<Bodega> bodega = auditoriaService.obtenerTodoBodega();
         return bodega.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(bodega);
     }
 
     // Buscar por el nombre
     @GetMapping("/buscar")
-    public ResponseEntity<List<Bodega>> buscarPorNombre(@RequestParam String nombre) {
+    public ResponseEntity<Bodega> buscarPorNombre(@RequestParam String nombre) {
         List<Bodega> bodega = bodegaService.buscarPorNombre(nombre);
         return bodega.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(bodega);
     }
 
     // Buscar por ID
      @GetMapping("/{id}")
-    public ResponseEntity<List<Bodega>> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<Bodega> buscarPorId(@PathVariable Long id) {
         Bodega bodega = bodegaService.buscarPorId(id);
-        return bodega != null ? ResponseEntity.ok(bodega) : ResponseEntity.ok(bodega);
+        return bodega != null ? ResponseEntity.ok(bodega) : ResponseEntity.notFound().build();
     }
 
     @PostMapping("/guardar")
     public ResponseEntity<Bodega> guardarBodega(@RequestBody Bodega bodega) {
-        Bodega bodegaNuevo = bodegaService.guardarBodega(bodega);
+        Bodega bodegaNueva = bodegaService.guardarBodega(bodega);
 
-        return ResponseEntity.ok(BodegaNuevo);
+        return ResponseEntity.ok(bodegaNueva);
     }
 
     // Eliminar por id
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarBodega(@PathVariable Long id) {
-        if (bodegaService.obtenerTodoBodega().stream().noneMatch(a -> a.getId().equals(id))) {
-            return ResponseEntity.notFound().build();
-        }
-
-        bodegaService.eliminarBodega(id);
-        return ResponseEntity.noContent().build();
+        boolean eliminado = bodegaService.eliminarBodega(id);
+        return eliminado ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
     // Endpoind del patch

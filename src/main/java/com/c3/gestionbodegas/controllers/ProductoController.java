@@ -22,27 +22,27 @@ import com.c3.gestionbodegas.services.ProductoService;
 public class ProductoController {
 
     @Autowired
-    private final ProductoService productoService;
+    private ProductoService productoService;
 
     // Devolver todas las auditorias
     @GetMapping
-    public ResponseEntity<List<Producto>> obtenerTodoProducto() {
+    public ResponseEntity<Producto> obtenerTodoProducto() {
         List<Producto> producto = productoService.obtenerTodoProducto();
         return producto.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(producto);
     }
 
     // Buscar por el nombre
     @GetMapping("/buscar")
-    public ResponseEntity<List<Producto>> buscarPorNombre(@RequestParam String nombre) {
+    public ResponseEntity<Producto> buscarPorNombre(@RequestParam String nombre) {
         List<Producto> producto = productoService.buscarPorNombre(nombre);
         return producto.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(producto);
     }
 
     // Buscar por ID
      @GetMapping("/{id}")
-    public ResponseEntity<List<Producto>> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<Producto> buscarPorId(@PathVariable Long id) {
         Producto producto = productoService.buscarPorId(id);
-        return producto != null ? ResponseEntity.ok(producto) : ResponseEntity.ok(producto);
+        return producto != null ? ResponseEntity.ok(producto) : ResponseEntity.notFound().build();
     }
 
     @PostMapping("/guardar")
@@ -55,12 +55,8 @@ public class ProductoController {
     // Eliminar por id
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarProducto(@PathVariable Long id) {
-        if (productoService.obtenerTodoProducto().stream().noneMatch(a -> a.getId().equals(id))) {
-            return ResponseEntity.notFound().build();
-        }
-
-        productoService.eliminarProducto(id);
-        return ResponseEntity.noContent().build();
+        boolean eliminado = productoService.eliminarProducto(id);
+        return eliminado ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
     // Endpoind del patch

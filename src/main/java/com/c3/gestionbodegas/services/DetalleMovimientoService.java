@@ -30,7 +30,7 @@ public class DetalleMovimientoService {
         return detalleMovimientoRepository.save(detalleMovimiento); // insert into .... values ...
     }
 
-    public void eliminarDetalleMovimiento(Long id) {
+    public boolean eliminarDetalleMovimiento(Long id) {
         detalleMovimientoRepository.deleteById(id);
     }
 

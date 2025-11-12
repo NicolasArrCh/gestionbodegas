@@ -22,25 +22,25 @@ import com.c3.gestionbodegas.services.DetalleMovimientoService;
 public class DetalleMovimientoController {
 
     @Autowired
-    private final DetalleMovimientoService detalleMovimientoService;
+    private DetalleMovimientoService detalleMovimientoService;
 
     // Devolver todas los detalles de movimiento
     @GetMapping
-    public ResponseEntity<List<DetalleMovimiento>> obtenerTodoDetalleMovimiento() {
+    public ResponseEntity<DetalleMovimiento> obtenerTodoDetalleMovimiento() {
         List<DetalleMovimiento> detalleMovimiento = detalleMovimientoService.obtenerTodoDetalleMovimiento();
         return detalleMovimiento.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(detalleMovimiento);
     }
 
     // Buscar por el nombre
     @GetMapping("/buscar")
-    public ResponseEntity<List<DetalleMovimiento>> buscarPorNombre(@RequestParam String nombre) {
+    public ResponseEntity<DetalleMovimiento> buscarPorNombre(@RequestParam String nombre) {
         List<DetalleMovimiento> detalleMovimiento = detalleMovimientoService.buscarPorNombre(nombre);
         return detalleMovimiento.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(detalleMovimiento);
     }
 
     // Buscar por ID
      @GetMapping("/{id}")
-    public ResponseEntity<List<DetalleMovimiento>> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<DetalleMovimiento> buscarPorId(@PathVariable Long id) {
         DetalleMovimiento detalleMovimiento = detalleMovimientoService.buscarPorId(id);
         return detalleMovimiento != null ? ResponseEntity.ok(detalleMovimiento) : ResponseEntity.ok(detalleMovimiento);
     }
@@ -55,12 +55,8 @@ public class DetalleMovimientoController {
     // Eliminar por id
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarDetalleMovimiento(@PathVariable Long id) {
-        if (detalleMovimientoService.obtenerTodoDetalleMovimiento().stream().noneMatch(a -> a.getId().equals(id))) {
-            return ResponseEntity.notFound().build();
-        }
-
-        detalleMovimientoService.eliminarDetalleMovimiento(id);
-        return ResponseEntity.noContent().build();
+        boolean eliminado = detalleMovimientoService.eliminarDetalleMovimiento(id);
+        return eliminado ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
     // Endpoind del patch

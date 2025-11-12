@@ -30,7 +30,7 @@ public class BodegaService {
         return bodegaRepository.save(bodega); // insert into .... values ...
     }
 
-    public void eliminarBodega(Long id) {
+    public boolean eliminarBodega(Long id) {
         bodegaRepository.deleteById(id);
     }
 

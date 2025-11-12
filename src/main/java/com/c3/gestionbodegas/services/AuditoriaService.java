@@ -18,7 +18,7 @@ public class AuditoriaService {
         return auditoriaRepository.findAll();
     }
 
-    public Auditoria buscarAuditoriaPorId(Long id) {
+    public Auditoria buscarPorId(Long id) {
         return auditoriaRepository.findById(id).orElse(null);
     }
 
@@ -30,14 +30,20 @@ public class AuditoriaService {
         return auditoriaRepository.save(auditoria); // insert into .... values ...
     }
 
-    public void eliminarAuditoria(Long id) {
-        auditoriaRepository.deleteById(id);
+    public boolean eliminarAuditoria(Long id) {
+        if (auditoriaRepository.existsById(id)) {
+            auditoriaRepository.deleteById(id);
+            return true;
+        }
+
+        return false;
     }
 
     public boolean actualizarAuditoria(Long id, Auditoria auditoriaActualizada) {
         int filasActualizadas = auditoriaRepository.actualizarAuditoria (
             id,
-            auditoriaActualizada.getNombre());
+            auditoriaActualizada.getUsername(),
+            auditoriaActualizada.getTipoOperacion());
         
         return filasActualizadas > 0;
     }

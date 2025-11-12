@@ -30,7 +30,7 @@ public class UsuarioService {
         return usuarioRepository.save(usuario); // insert into .... values ...
     }
 
-    public void eliminarUsuario(Long id) {
+    public boolean eliminarUsuario(Long id) {
         UsuarioRepository.deleteById(id);
     }
 

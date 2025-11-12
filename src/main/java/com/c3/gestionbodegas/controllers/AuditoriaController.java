@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.c3.gestionbodegas.services.AuditoriaService;
-import com.c3.gestionbodegas.model.Auditoria;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,45 +25,41 @@ import com.c3.gestionbodegas.entities.Auditoria;
 public class AuditoriaController {
 
     @Autowired
-    private final AuditoriaService auditoriaService;
+    private AuditoriaService auditoriaService;
 
     // Devolver todas las auditorias
     @GetMapping
-    public ResponseEntity<List<Auditoria>> obtenerTodoAuditoria() {
+    public ResponseEntity<Auditoria> obtenerTodoAuditoria() {
         List<Auditoria> auditoria = auditoriaService.obtenerTodoAuditoria();
         return auditoria.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(auditoria);
     }
 
     // Buscar por el nombre
     @GetMapping("/buscar")
-    public ResponseEntity<List<Auditoria>> buscarPorNombre(@RequestParam String nombre) {
+    public ResponseEntity<Auditoria> buscarPorNombre(@RequestParam String nombre) {
         List<Auditoria> auditoria = auditoriaService.buscarPorNombre(nombre);
         return auditoria.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(auditoria);
     }
 
     // Buscar por ID
      @GetMapping("/{id}")
-    public ResponseEntity<List<Auditoria>> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<Auditoria> buscarPorId(@PathVariable Long id) {
         Auditoria auditoria = auditoriaService.buscarPorId(id);
-        return auditoria != null ? ResponseEntity.ok(auditoria) : ResponseEntity.ok(auditoria);
+        return auditoria != null ? ResponseEntity.ok(auditoria) : ResponseEntity.notFound().build();
     }
 
     @PostMapping("/guardar")
     public ResponseEntity<Auditoria> guardarAuditoria(@RequestBody Auditoria auditoria) {
-        Auditoria auditoriaNuevo = AuditoriaService.guardarAuditoria(auditoria);
+        Auditoria auditoriaNueva = auditoriaService.guardarAuditoria(auditoria);
 
-        return ResponseEntity.ok(auditoriaNuevo);
+        return ResponseEntity.ok(auditoriaNueva);
     }
 
     // Eliminar por id
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarAuditoria(@PathVariable Long id) {
-        if (auditoriaService.obtenerTodoAuditoria().stream().noneMatch(a -> a.getId().equals(id))) {
-            return ResponseEntity.notFound().build();
-        }
-
-        auditoriaService.eliminarAuditoria(id);
-        return ResponseEntity.noContent().build();
+        boolean eliminado = auditoriaService.eliminarAuditoria(id);
+        return eliminado ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
     // Endpoind del patch
