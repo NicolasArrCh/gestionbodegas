@@ -37,7 +37,7 @@ public class Producto {
     @Size(max = 100, message = "La categoría no debe exceder los 100 caracteres")
     @Column(nullable= false, length = 100)
     private String categoria;
-
+    
     @Min(value = 0, message = "El stock no puede ser negativo")
     @Column(nullable = false)
     private Integer stock;
