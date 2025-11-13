@@ -33,8 +33,9 @@ public class DetalleMovimientoService {
     }
 
     // Eliminar un detalle por su ID
-    public void eliminar(Integer id) {
+    public boolean eliminar(Integer id) {
         detalleMovimientoRepository.deleteById(id);
+        return false;
     }
 
     // Obtener todos los detalles de un movimiento específico
@@ -50,5 +51,15 @@ public class DetalleMovimientoService {
     // Consultar detalles donde la cantidad es menor a un valor (útil para auditorías o alertas)
     public List<DetalleMovimiento> buscarPorCantidadMenorA(Integer cantidad) {
         return detalleMovimientoRepository.findByCantidadLessThan(cantidad);
+    }
+
+    public DetalleMovimiento actualizar(Integer id, DetalleMovimiento detalleMovimiento) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'actualizar'");
+    }
+
+    public DetalleMovimiento obtenerPorId(Integer id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'obtenerPorId'");
     }
 }

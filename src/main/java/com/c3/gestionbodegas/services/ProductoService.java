@@ -31,8 +31,9 @@ public class ProductoService {
     }
 
     // Eliminar un producto por su ID
-    public void eliminar(Integer id) {
+    public boolean eliminar(Integer id) {
         productoRepository.deleteById(id);
+        return false;
     }
 
     // Buscar producto por nombre exacto
@@ -58,5 +59,15 @@ public class ProductoService {
     // Obtener reporte de los productos más movidos (usando la consulta personalizada)
     public List<Object[]> obtenerProductosMasMovidos() {
         return productoRepository.obtenerProductosMasMovidos();
+    }
+
+    public Producto obtenerPorId(Integer id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'obtenerPorId'");
+    }
+
+    public Producto actualizar(Integer id, Producto producto) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'actualizar'");
     }
 }
