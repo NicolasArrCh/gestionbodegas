@@ -1,76 +1,78 @@
 package com.c3.gestionbodegas.controllers;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.c3.gestionbodegas.services.AuditoriaService;
-
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import com.c3.gestionbodegas.entities.Auditoria;
-
+import com.c3.gestionbodegas.entities.Usuario;
+import com.c3.gestionbodegas.entities.Auditoria.TipoOperacion;
+import com.c3.gestionbodegas.services.AuditoriaService;
 
 @RestController
-@RequestMapping("/auditoria")
+@RequestMapping("/api/auditorias")
+@CrossOrigin(origins = "*") // Permite peticiones desde cualquier origen (útil para frontends como React o Angular)
 public class AuditoriaController {
 
     @Autowired
     private AuditoriaService auditoriaService;
 
-    // Devolver todas las auditorias
+    // ✅ Obtener todas las auditorías
     @GetMapping
-    public ResponseEntity<Auditoria> obtenerTodoAuditoria() {
-        List<Auditoria> auditoria = auditoriaService.obtenerTodoAuditoria();
-        return auditoria.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(auditoria);
+    public ResponseEntity<List<Auditoria>> obtenerTodas() {
+        List<Auditoria> auditorias = auditoriaService.obtenerTodas();
+        return ResponseEntity.ok(auditorias);
     }
 
-    // Buscar por el nombre
-    @GetMapping("/buscar")
-    public ResponseEntity<Auditoria> buscarPorNombre(@RequestParam String nombre) {
-        List<Auditoria> auditoria = auditoriaService.buscarPorNombre(nombre);
-        return auditoria.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(auditoria);
+    // ✅ Guardar una nueva auditoría
+    @PostMapping
+    public ResponseEntity<Auditoria> guardar(@RequestBody Auditoria auditoria) {
+        Auditoria nueva = auditoriaService.guardar(auditoria);
+        return ResponseEntity.ok(nueva);
     }
 
-    // Buscar por ID
-     @GetMapping("/{id}")
-    public ResponseEntity<Auditoria> buscarPorId(@PathVariable Long id) {
-        Auditoria auditoria = auditoriaService.buscarPorId(id);
-        return auditoria != null ? ResponseEntity.ok(auditoria) : ResponseEntity.notFound().build();
+    // ✅ Buscar auditorías por tipo de operación
+    @GetMapping("/tipo/{tipo}")
+    public ResponseEntity<List<Auditoria>> buscarPorTipo(@PathVariable("tipo") TipoOperacion tipoOperacion) {
+        List<Auditoria> auditorias = auditoriaService.buscarPorTipoOperacion(tipoOperacion);
+        return ResponseEntity.ok(auditorias);
     }
 
-    @PostMapping("/guardar")
-    public ResponseEntity<Auditoria> guardarAuditoria(@RequestBody Auditoria auditoria) {
-        Auditoria auditoriaNueva = auditoriaService.guardarAuditoria(auditoria);
-
-        return ResponseEntity.ok(auditoriaNueva);
+    // ✅ Buscar auditorías por entidad afectada
+    @GetMapping("/entidad/{entidad}")
+    public ResponseEntity<List<Auditoria>> buscarPorEntidad(@PathVariable("entidad") String entidad) {
+        List<Auditoria> auditorias = auditoriaService.buscarPorEntidadAfectada(entidad);
+        return ResponseEntity.ok(auditorias);
     }
 
-    // Eliminar por id
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarAuditoria(@PathVariable Long id) {
-        boolean eliminado = auditoriaService.eliminarAuditoria(id);
-        return eliminado ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    // ✅ Buscar auditorías por rango de fechas
+    @GetMapping("/fechas")
+    public ResponseEntity<List<Auditoria>> buscarPorFechas(
+            @RequestParam("inicio") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime inicio,
+            @RequestParam("fin") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fin) {
+
+        List<Auditoria> auditorias = auditoriaService.buscarPorRangoFechas(inicio, fin);
+        return ResponseEntity.ok(auditorias);
     }
 
-    // Endpoind del patch
-    @PatchMapping("/{id}")
-    public ResponseEntity<String> actualizarAuditoria(
-        @PathVariable Long id,
-        @RequestBody Auditoria auditoriaActualizada) {
+    // ✅ Buscar auditorías por nombre de usuario y tipo de operación
+    @GetMapping("/usuario/{username}/tipo/{tipo}")
+    public ResponseEntity<List<Auditoria>> buscarPorUsuarioYTipo(
+            @PathVariable("username") String username,
+            @PathVariable("tipo") TipoOperacion tipoOperacion) {
 
-            boolean actualizado = auditoriaService.actualizarAuditoria(id, auditoriaActualizada);
-            return actualizado ?
-                ResponseEntity.ok("Auditoria actualizada con éxito.") :
-                ResponseEntity.notFound().build();
-        }
+        List<Auditoria> auditorias = auditoriaService.buscarPorUsuarioYTipo(username, tipoOperacion);
+        return ResponseEntity.ok(auditorias);
+    }
+
+    // ✅ Buscar auditorías por usuario (requiere objeto Usuario)
+    @PostMapping("/usuario")
+    public ResponseEntity<List<Auditoria>> buscarPorUsuario(@RequestBody Usuario usuario) {
+        List<Auditoria> auditorias = auditoriaService.buscarPorUsuario(usuario);
+        return ResponseEntity.ok(auditorias);
+    }
 }

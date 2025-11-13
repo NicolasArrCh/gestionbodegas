@@ -4,70 +4,98 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.c3.gestionbodegas.entities.Producto;
 import com.c3.gestionbodegas.services.ProductoService;
 
 @RestController
-@RequestMapping("/producto")
+@RequestMapping("/api/productos")
+@CrossOrigin(origins = "*")
 public class ProductoController {
 
     @Autowired
     private ProductoService productoService;
 
-    // Devolver todas las auditorias
+    // ✅ Obtener todos los productos
     @GetMapping
-    public ResponseEntity<Producto> obtenerTodoProducto() {
-        List<Producto> producto = productoService.obtenerTodoProducto();
-        return producto.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(producto);
+    public ResponseEntity<List<Producto>> obtenerTodos() {
+        List<Producto> productos = productoService.obtenerTodos();
+        return ResponseEntity.ok(productos);
     }
 
-    // Buscar por el nombre
-    @GetMapping("/buscar")
-    public ResponseEntity<Producto> buscarPorNombre(@RequestParam String nombre) {
-        List<Producto> producto = productoService.buscarPorNombre(nombre);
-        return producto.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(producto);
-    }
-
-    // Buscar por ID
-     @GetMapping("/{id}")
-    public ResponseEntity<Producto> buscarPorId(@PathVariable Long id) {
-        Producto producto = productoService.buscarPorId(id);
-        return producto != null ? ResponseEntity.ok(producto) : ResponseEntity.notFound().build();
-    }
-
-    @PostMapping("/guardar")
-    public ResponseEntity<Producto> guardarProducto(@RequestBody Producto producto) {
-        Producto productoNuevo = productoService.guardarProducto(producto);
-
-        return ResponseEntity.ok(productoNuevo);
-    }
-
-    // Eliminar por id
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarProducto(@PathVariable Long id) {
-        boolean eliminado = productoService.eliminarProducto(id);
-        return eliminado ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
-    }
-
-    // Endpoind del patch
-    @PatchMapping("/{id}")
-    public ResponseEntity<String> actualizarProducto(
-        @PathVariable Long id,
-        @RequestBody Producto productoActualizado) {
-
-            boolean actualizado = productoService.actualizarProducto(id, productoActualizado);
-            return actualizado ?
-                ResponseEntity.ok("Producto actualizado con éxito.") :
-                ResponseEntity.notFound().build();
+    // ✅ Obtener un producto por ID
+    @GetMapping("/{id}")
+    public ResponseEntity<Producto> obtenerPorId(@PathVariable Integer id) {
+        Producto producto = productoService.obtenerPorId(id);
+        if (producto == null) {
+            return ResponseEntity.notFound().build();
         }
+        return ResponseEntity.ok(producto);
+    }
+
+    // ✅ Crear un nuevo producto
+    @PostMapping
+    public ResponseEntity<Producto> crear(@RequestBody Producto producto) {
+        Producto nuevo = productoService.guardar(producto);
+        return ResponseEntity.ok(nuevo);
+    }
+
+    // ✅ Actualizar un producto existente
+    @PutMapping("/{id}")
+    public ResponseEntity<Producto> actualizar(@PathVariable Integer id, @RequestBody Producto producto) {
+        Producto actualizado = productoService.actualizar(id, producto);
+        if (actualizado == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(actualizado);
+    }
+
+    // ✅ Eliminar un producto
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
+        boolean eliminado = productoService.eliminar(id);
+        if (!eliminado) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.noContent().build();
+    }
+
+    // ✅ Buscar producto por nombre exacto
+    @GetMapping("/nombre/{nombre}")
+    public ResponseEntity<Producto> buscarPorNombre(@PathVariable String nombre) {
+        Producto producto = productoService.buscarPorNombre(nombre);
+        if (producto == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(producto);
+    }
+
+    // ✅ Buscar productos por categoría (contiene, sin importar mayúsculas)
+    @GetMapping("/categoria/{categoria}")
+    public ResponseEntity<List<Producto>> buscarPorCategoria(@PathVariable String categoria) {
+        List<Producto> productos = productoService.buscarPorCategoria(categoria);
+        return ResponseEntity.ok(productos);
+    }
+
+    // ✅ Buscar productos con stock menor a X (para alertas)
+    @GetMapping("/stock-bajo/{cantidad}")
+    public ResponseEntity<List<Producto>> buscarPorStockMenorA(@PathVariable Integer cantidad) {
+        List<Producto> productos = productoService.buscarPorStockBajo(cantidad);
+        return ResponseEntity.ok(productos);
+    }
+
+    // ✅ Verificar si existe un producto por nombre
+    @GetMapping("/existe/{nombre}")
+    public ResponseEntity<Boolean> existePorNombre(@PathVariable String nombre) {
+        boolean existe = productoService.existePorNombre(nombre);
+        return ResponseEntity.ok(existe);
+    }
+
+    // ✅ Obtener los productos más movidos (consulta personalizada)
+    @GetMapping("/mas-movidos")
+    public ResponseEntity<List<Object[]>> obtenerProductosMasMovidos() {
+        List<Object[]> productos = productoService.obtenerProductosMasMovidos();
+        return ResponseEntity.ok(productos);
+    }
 }
