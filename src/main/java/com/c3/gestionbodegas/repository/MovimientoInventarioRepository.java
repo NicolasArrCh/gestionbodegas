@@ -1,5 +1,6 @@
 package com.c3.gestionbodegas.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,9 +9,8 @@ import org.springframework.stereotype.Repository;
 
 import com.c3.gestionbodegas.entities.Bodega;
 import com.c3.gestionbodegas.entities.MovimientoInventario;
-import com.c3.gestionbodegas.entities.Usuario;
 import com.c3.gestionbodegas.entities.MovimientoInventario.TipoMovimiento;
-import java.time.LocalDateTime;
+import com.c3.gestionbodegas.entities.Usuario;
 
 
 @Repository
@@ -23,7 +23,7 @@ public interface MovimientoInventarioRepository extends JpaRepository<Movimiento
     List<MovimientoInventario> findByUsuario(Usuario usuario);
 
     // Buscar movimientos entre un rango de fechas
-    List<MovimientoInventario> findByFecha(LocalDateTime fechaInicio, LocalDateTime fechaFin);
+    List<MovimientoInventario> findByFechaBetween(LocalDateTime fechaInicio, LocalDateTime fechaFin);
 
     // Buscar movimientos por bodega origen o destino
     List<MovimientoInventario> findByBodegaOrigenOrBodegaDestino(Bodega bodegaOrigen, Bodega bodegaDestino);

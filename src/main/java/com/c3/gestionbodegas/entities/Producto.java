@@ -7,10 +7,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -39,4 +38,8 @@ public class Producto {
 
     @Column(nullable = false, precision= 10, scale = 2)
     private BigDecimal precio;
+
+    @ManyToOne
+    @JoinColumn(name = "bodega_id, nullable = false")
+    private Bodega bodega;
 }

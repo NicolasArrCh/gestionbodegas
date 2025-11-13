@@ -53,7 +53,7 @@ public class MovimientoInventarioService {
     public List<MovimientoInventario> buscarPorRangoDeFechas(LocalDateTime fechaInicio, LocalDateTime fechaFin) {
         // ⚠️ Si el método del repository es findByFecha(...) y no findByFechaBetween(...),
         // deberías cambiar el nombre del método en el repository a findByFechaBetween para que funcione correctamente.
-        return movimientoInventarioRepository.findByFecha(fechaInicio, fechaFin);
+        return movimientoInventarioRepository.findByFechaBetween(fechaInicio, fechaFin);
     }
 
     // Buscar movimientos por bodega de origen o destino

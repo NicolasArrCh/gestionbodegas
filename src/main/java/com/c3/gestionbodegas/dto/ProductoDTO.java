@@ -2,6 +2,8 @@ package com.c3.gestionbodegas.dto;
 
 import java.math.BigDecimal;
 
+import com.c3.gestionbodegas.entities.Bodega;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -28,5 +30,7 @@ public class ProductoDTO {
     private Integer stock;
 
     private BigDecimal precio;
+
+    private Bodega bodega;
 
 }
