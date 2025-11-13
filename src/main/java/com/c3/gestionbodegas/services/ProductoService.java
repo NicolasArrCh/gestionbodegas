@@ -1,6 +1,7 @@
 package com.c3.gestionbodegas.services;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,33 +13,50 @@ import com.c3.gestionbodegas.repository.ProductoRepository;
 public class ProductoService {
 
     @Autowired
-    private final ProductoRepository productoRepository;
+    private ProductoRepository productoRepository;
 
-    public List<Producto> obtenerTodoProducto() {
+    // Obtener todos los productos
+    public List<Producto> obtenerTodos() {
         return productoRepository.findAll();
     }
 
-    public Producto buscarProductoPorId(Long id) {
-        return productoRepository.findById(id).orElse(null);
+    // Buscar un producto por su ID
+    public Optional<Producto> buscarPorId(Integer id) {
+        return productoRepository.findById(id);
     }
 
-    public List<Producto> buscarPorNombre(String nombre) {
-        return productoRepository.findByNombre(nombre);
+    // Guardar o actualizar un producto
+    public Producto guardar(Producto producto) {
+        return productoRepository.save(producto);
     }
 
-    public Producto guardarProducto(Producto producto) {
-        return productoRepository.save(producto); // insert into .... values ...
-    }
-
-    public boolean eliminarProducto(Long id) {
+    // Eliminar un producto por su ID
+    public void eliminar(Integer id) {
         productoRepository.deleteById(id);
     }
 
-    public boolean actualizarProducto(Long id, Producto productoActualizado) {
-        int filasActualizadas = productoRepository.actualizarProducto (
-            id,
-            productoActualizado.getNombre());
-        
-        return filasActualizadas > 0;
+    // Buscar producto por nombre exacto
+    public Producto buscarPorNombre(String nombre) {
+        return productoRepository.findByNombre(nombre);
+    }
+
+    // Buscar productos por categoría (sin importar mayúsculas/minúsculas)
+    public List<Producto> buscarPorCategoria(String categoria) {
+        return productoRepository.findByCategoriaContainingIgnoreCase(categoria);
+    }
+
+    // Buscar productos con stock bajo (menor que el valor indicado)
+    public List<Producto> buscarPorStockBajo(Integer cantidad) {
+        return productoRepository.findByStockLessThan(cantidad);
+    }
+
+    // Verificar si existe un producto con ese nombre
+    public boolean existePorNombre(String nombre) {
+        return productoRepository.existsByNombre(nombre);
+    }
+
+    // Obtener reporte de los productos más movidos (usando la consulta personalizada)
+    public List<Object[]> obtenerProductosMasMovidos() {
+        return productoRepository.obtenerProductosMasMovidos();
     }
 }

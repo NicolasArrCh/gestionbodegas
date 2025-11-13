@@ -1,6 +1,7 @@
 package com.c3.gestionbodegas.services;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,33 +13,40 @@ import com.c3.gestionbodegas.repository.UsuarioRepository;
 public class UsuarioService {
 
     @Autowired
-    private final UsuarioRepository usuarioRepository;
+    private UsuarioRepository usuarioRepository;
 
-    public List<Usuario> obtenerTodoUsuario() {
+    // Obtener todos los usuarios
+    public List<Usuario> obtenerTodos() {
         return usuarioRepository.findAll();
     }
 
-    public Usuario buscarUsuarioPorId(Long id) {
-        return usuarioRepository.findById(id).orElse(null);
+    // Buscar un usuario por su ID
+    public Optional<Usuario> buscarPorId(Integer id) {
+        return usuarioRepository.findById(id);
     }
 
-    public List<Usuario> buscarPorNombre(String nombre) {
-        return usuarioRepository.findByNombre(nombre);
+    // Guardar o actualizar un usuario
+    public Usuario guardar(Usuario usuario) {
+        return usuarioRepository.save(usuario);
     }
 
-    public Usuario guardarUsuario(Usuario usuario) {
-        return usuarioRepository.save(usuario); // insert into .... values ...
+    // Eliminar un usuario por su ID
+    public void eliminar(Integer id) {
+        usuarioRepository.deleteById(id);
     }
 
-    public boolean eliminarUsuario(Long id) {
-        UsuarioRepository.deleteById(id);
+    // Buscar usuario por username (para login o autenticación)
+    public Optional<Usuario> buscarPorUsername(String username) {
+        return usuarioRepository.findByUsername(username);
     }
 
-    public boolean actualizarUsuario(Long id, Usuario usuarioActualizada) {
-        int filasActualizadas = usuarioRepository.actualizarUsuario (
-            id,
-            usuarioActualizada.getNombre());
-        
-        return filasActualizadas > 0;
+    // Verificar si ya existe un usuario con ese username
+    public boolean existePorUsername(String username) {
+        return usuarioRepository.existsByUsername(username);
+    }
+
+    // Buscar usuarios por rol
+    public List<Usuario> buscarPorRol(Usuario.Rol rol) {
+        return usuarioRepository.findByRol(rol);
     }
 }

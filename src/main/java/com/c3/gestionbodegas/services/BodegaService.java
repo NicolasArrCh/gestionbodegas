@@ -1,6 +1,7 @@
 package com.c3.gestionbodegas.services;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,33 +13,50 @@ import com.c3.gestionbodegas.repository.BodegaRepository;
 public class BodegaService {
 
     @Autowired
-    private final BodegaRepository bodegaRepository;
+    private BodegaRepository bodegaRepository;
 
-    public List<Bodega> obtenerTodoBodega() {
+    // Obtener todas las bodegas
+    public List<Bodega> obtenerTodas() {
         return bodegaRepository.findAll();
     }
 
-    public Bodega buscarBodegaPorId(Long id) {
-        return bodegaRepository.findById(id).orElse(null);
+    // Buscar una bodega por su ID
+    public Optional<Bodega> buscarPorId(Integer id) {
+        return bodegaRepository.findById(id);
     }
 
-    public List<Bodega> buscarPorNombre(String nombre) {
-        return bodegaRepository.findByNombre(nombre);
+    // Guardar o actualizar una bodega
+    public Bodega guardar(Bodega bodega) {
+        return bodegaRepository.save(bodega);
     }
 
-    public Bodega guardarBodega(Bodega bodega) {
-        return bodegaRepository.save(bodega); // insert into .... values ...
-    }
-
-    public boolean eliminarBodega(Long id) {
+    // Eliminar una bodega por su ID
+    public void eliminar(Integer id) {
         bodegaRepository.deleteById(id);
     }
 
-    public boolean actualizarBodega(Long id, Bodega bodegaActualizada) {
-        int filasActualizadas = bodegaRepository.actualizarBodega (
-            id,
-            bodegaActualizada.getNombre());
-        
-        return filasActualizadas > 0;
+    // Buscar una bodega por su nombre exacto
+    public Bodega buscarPorNombre(String nombre) {
+        return bodegaRepository.findByNombre(nombre);
+    }
+
+    // Verificar si ya existe una bodega con ese nombre
+    public boolean existePorNombre(String nombre) {
+        return bodegaRepository.existsByNombre(nombre);
+    }
+
+    // Buscar bodegas por ubicación (ignorando mayúsculas/minúsculas)
+    public List<Bodega> buscarPorUbicacion(String ubicacion) {
+        return bodegaRepository.findByUbicacionContainingIgnoreCase(ubicacion);
+    }
+
+    // Buscar bodegas con capacidad menor a cierto valor
+    public List<Bodega> buscarPorCapacidadMenorA(Integer capacidad) {
+        return bodegaRepository.findByCapacidadLessThan(capacidad);
+    }
+
+    // Obtener resumen de stock total por bodega (devuelve lista de Object[])
+    public List<Object[]> obtenerResumenStockPorBodega() {
+        return bodegaRepository.obtenerResumenStockPorBodega();
     }
 }
