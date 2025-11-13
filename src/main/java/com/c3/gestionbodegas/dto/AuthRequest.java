@@ -1,4 +1,5 @@
-package com.c3.gestionbodegas.entities;
+package com.c3.gestionbodegas.dto;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,4 +11,3 @@ public class AuthRequest {
     private String username;
     private String password;
 }
-
