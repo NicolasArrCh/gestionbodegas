@@ -30,6 +30,10 @@ public class Auditoria {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
+    @Column(nullable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime fecha = LocalDateTime.now();
+
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_operacion", nullable = false)
     private TipoOperacion tipoOperacion;

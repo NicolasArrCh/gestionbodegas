@@ -3,7 +3,8 @@ CREATE TABLE bodegas (
     nombre VARCHAR(100) NOT NULL,
     ubicacion VARCHAR(150) NOT NULL,
     capacidad INT NOT NULL,
-    encargado VARCHAR(100) NOT NULL
+    encargado_id INT not null,
+    foreign key (encargado_id) references usuarios(id)
 );
 
 CREATE TABLE productos (
@@ -46,6 +47,7 @@ CREATE TABLE detalle_movimiento (
 
 CREATE TABLE auditoria (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    fecha DATETIME not null default current_timestamp,
     tipo_operacion ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL,
     fecha_hora DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     usuario_id INT NOT NULL,
@@ -54,6 +56,3 @@ CREATE TABLE auditoria (
     valor_nuevo JSON NULL,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
-
-
-

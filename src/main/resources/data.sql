@@ -1,9 +1,9 @@
-INSERT INTO bodegas (nombre, ubicacion, capacidad, encargado) VALUES
-('Bodega Central', 'Zona Industrial Norte, Medellín', 5000, 'Carlos Gómez'),
-('Bodega Norte', 'Km 12 Vía Bello, Medellín', 3000, 'Laura Pérez'),
-('Bodega Sur', 'Parque Logístico del Sur, Itagüí', 4500, 'Andrés Ríos'),
-('Bodega Occidente', 'Av. 80 #45-12, Medellín', 2500, 'Mariana Torres'),
-('Bodega Oriente', 'Aeropuerto José María Córdova, Rionegro', 6000, 'Julián Hernández');
+INSERT INTO bodegas (nombre, ubicacion, capacidad, encargado_id) VALUES
+('Bodega Central', 'Zona Industrial Norte, Medellín', 5000, 2),
+('Bodega Norte', 'Km 12 Vía Bello, Medellín', 3000, 2),
+('Bodega Sur', 'Parque Logístico del Sur, Itagüí', 4500, 4),
+('Bodega Occidente', 'Av. 80 #45-12, Medellín', 2500, 4),
+('Bodega Oriente', 'Aeropuerto José María Córdova, Rionegro', 6000, 4);
 
 INSERT INTO productos (nombre, categoria, stock, precio) VALUES
 ('Monitor LG 27"', 'Electrónica', 35, 950000.00),
@@ -13,27 +13,27 @@ INSERT INTO productos (nombre, categoria, stock, precio) VALUES
 ('Disco SSD 1TB Samsung', 'Almacenamiento', 40, 380000.00);
 
 INSERT INTO usuarios (username, password, nombre_completo, rol) VALUES
-('cgomez', '1234', 'Carlos Gómez', 'ADMIN'),
-('lperez', '1234', 'Laura Pérez', 'ENCARGADO'),
-('matorres', '1234', 'Mariana Torres', 'OPERADOR'),
-('jhernandez', '1234', 'Julián Hernández', 'ENCARGADO'),
-('arios', '1234', 'Andrés Ríos', 'OPERADOR');
+('cgomez', '$2a$10$aoScDQEO.4uKepA6cBbkZugy26XEvT1Pa/fD1aemCyaO0h0QcWf0S', 'Carlos Gómez', 'ADMIN'),
+('lperez', '$2a$10$aL2N2DcQAGg8GmrGmYD8mu6m7otjjoXEAAhu7cLFW7TTptpSWUUTG', 'Laura Pérez', 'ENCARGADO'),
+('matorres', '$2a$10$W4moBz5pvqhMCiNhuNMCgeFk3xXl4oV5/IvuZJh/laXaGP7eS.zCm', 'Mariana Torres', 'OPERADOR'),
+('jhernandez', '$2a$10$sctikZu/tKgmcMkVrbwYe.J4WRrYeVU/auQsW3OQHjcD/04L2VYda', 'Julián Hernández', 'ENCARGADO'),
+('arios', '$2a$10$nanvYZL/aLyj.ThPkDwym.nQi1N0zJTPAhhh.esEbUy9gQpYUxgw6', 'Andrés Ríos', 'OPERADOR');
 
 INSERT INTO movimientos_inventario (tipo, usuario_id, bodega_origen_id, bodega_destino_id) VALUES
-('ENTRADA', 1, NULL, 1),         -- Carlos Gómez ingresa productos a Bodega Central
-('SALIDA', 2, 2, NULL),          -- Laura Pérez retira productos de Bodega Norte
-('TRANSFERENCIA', 5, 1, 3),      -- Andrés Ríos transfiere de Central a Sur
-('ENTRADA', 3, NULL, 4),         -- Mariana Torres ingresa a Bodega Occidente
-('SALIDA', 4, 5, NULL);          -- Julián Hernández saca de Bodega Oriente
+('ENTRADA', 1, NULL, 6),         
+('SALIDA', 2, 7, NULL),          
+('TRANSFERENCIA', 5, 6, 8),      
+('ENTRADA', 3, NULL, 9),         
+('SALIDA', 4, 10, NULL);          
 
 
 INSERT INTO detalle_movimiento (movimiento_id, producto_id, cantidad)
 VALUES
-(1, 1, 20),  -- Entrada de 20 Monitores LG a Bodega Central
-(1, 2, 15),
-(2, 3, 10),  -- Salida de 10 Mouse Logitech
-(3, 4, 5),   -- Transferencia de 5 Sillas Gamer de Central a Sur
-(3, 5, 10);
+(31, 1, 20),  -- Entrada de 20 Monitores LG a Bodega Central
+(31, 2, 15),
+(32, 3, 10),  -- Salida de 10 Mouse Logitech
+(33, 4, 5),   -- Transferencia de 5 Sillas Gamer de Central a Sur
+(33, 5, 10);
 
 INSERT INTO auditoria (tipo_operacion, usuario_id, entidad_afectada, valor_anterior, valor_nuevo) VALUES
 ('INSERT', 1, 'Bodega', NULL, '{"id":1,"nombre":"Bodega Central","capacidad":5000}'),
