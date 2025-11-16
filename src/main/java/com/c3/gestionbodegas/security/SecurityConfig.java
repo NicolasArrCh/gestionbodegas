@@ -47,10 +47,19 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
+            .cors(cors -> {}) // Habilitar CORS (usa la configuración de CorsConfig)
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 // endpoints públicos (para login y registro)
                 .requestMatchers("/api/auth/**").permitAll()
+                // HTML públicos (login y dashboard_admin)
+                .requestMatchers("/html/**").permitAll()
+                // Swagger y OpenAPI públicos
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                // Archivos estáticos (CSS, JS, etc) públicos
+                .requestMatchers("/css/**", "/js/**").permitAll()
+                // API requiere autenticación
+                .requestMatchers("/api/**").authenticated()
                 // cualquier otra ruta requiere token
                 .anyRequest().authenticated()
             )

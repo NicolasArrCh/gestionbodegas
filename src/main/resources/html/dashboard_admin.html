@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Gestión de Bodegas</title>
+    <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <h2>📦 Gestión de Bodegas</h2>
+            </div>
+            <div class="navbar-menu">
+                <span id="usuarioNombre" class="usuario-nombre"></span>
+                <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="container">
+        <aside class="sidebar">
+            <ul class="menu">
+                <li><a href="#" class="menu-link active" data-section="inicio">🏠 Inicio</a></li>
+                <li><a href="#" class="menu-link" data-section="bodegas">🏢 Bodegas</a></li>
+                <li><a href="#" class="menu-link" data-section="productos">📦 Productos</a></li>
+                <li><a href="#" class="menu-link" data-section="movimientos">↔️ Movimientos</a></li>
+                <li><a href="#" class="menu-link" data-section="usuarios">👥 Usuarios</a></li>
+                <li><a href="#" class="menu-link" data-section="auditoria">📋 Auditoría</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sección Inicio -->
+            <section id="inicio" class="content-section active">
+                <div class="section-header">
+                    <h1>Bienvenido al Dashboard</h1>
+                    <p>Sistema de Gestión de Inventario de Bodegas</p>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-icon">📦</div>
+                        <div class="card-content">
+                            <h3>Total Productos</h3>
+                            <p id="totalProductos" class="card-number">0</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">🏢</div>
+                        <div class="card-content">
+                            <h3>Total Bodegas</h3>
+                            <p id="totalBodegas" class="card-number">0</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">↔️</div>
+                        <div class="card-content">
+                            <h3>Movimientos Hoy</h3>
+                            <p id="movimientosHoy" class="card-number">0</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">👥</div>
+                        <div class="card-content">
+                            <h3>Usuarios Activos</h3>
+                            <p id="usuariosActivos" class="card-number">0</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección Bodegas -->
+            <section id="bodegas" class="content-section">
+                <div class="section-header">
+                    <h1>Gestión de Bodegas</h1>
+                    <button id="agregarBodegaBtn" class="btn-primary">+ Nueva Bodega</button>
+                </div>
+                <div id="bodegasContainer" class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Ubicación</th>
+                                <th>Capacidad</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodegasTableBody">
+                            <tr><td colspan="5" class="text-center">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Sección Productos -->
+            <section id="productos" class="content-section">
+                <div class="section-header">
+                    <h1>Gestión de Productos</h1>
+                    <button id="agregarProductoBtn" class="btn-primary">+ Nuevo Producto</button>
+                </div>
+                <div id="productosContainer" class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>SKU</th>
+                                <th>Cantidad</th>
+                                <th>Precio</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productosTableBody">
+                            <tr><td colspan="6" class="text-center">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Sección Movimientos -->
+            <section id="movimientos" class="content-section">
+                <div class="section-header">
+                    <h1>Movimientos de Inventario</h1>
+                    <button id="agregarMovimientoBtn" class="btn-primary">+ Nuevo Movimiento</button>
+                </div>
+                <div id="movimientosContainer" class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tipo</th>
+                                <th>Bodega</th>
+                                <th>Cantidad</th>
+                                <th>Fecha</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="movimientosTableBody">
+                            <tr><td colspan="6" class="text-center">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Sección Usuarios -->
+            <section id="usuarios" class="content-section">
+                <div class="section-header">
+                    <h1>Gestión de Usuarios</h1>
+                    <button id="agregarUsuarioBtn" class="btn-primary">+ Nuevo Usuario</button>
+                </div>
+                <div id="usuariosContainer" class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Nombre</th>
+                                <th>Rol</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usuariosTableBody">
+                            <tr><td colspan="5" class="text-center">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Sección Auditoría -->
+            <section id="auditoria" class="content-section">
+                <div class="section-header">
+                    <h1>Registro de Auditoría</h1>
+                </div>
+                <div id="auditoriaContainer" class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Usuario</th>
+                                <th>Tipo Operación</th>
+                                <th>Entidad Afectada</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody id="auditoriaTableBody">
+                            <tr><td colspan="5" class="text-center">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            </section>
+
+            <!-- Modales -->
+            <!-- Modal para Bodega -->
+            <div id="modalBodega" class="modal" aria-hidden="true">
+                <div class="modal-content">
+                    <span class="close" data-close="modalBodega">&times;</span>
+                    <h2>Nueva Bodega</h2>
+                    <form id="formBodega">
+                        <input type="hidden" id="bodegaId">
+                        <div class="form-group">
+                            <label for="bodegaNombre">Nombre</label>
+                            <input type="text" id="bodegaNombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="bodegaUbicacion">Ubicación</label>
+                            <input type="text" id="bodegaUbicacion" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="bodegaCapacidad">Capacidad</label>
+                            <input type="number" id="bodegaCapacidad" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Guardar</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal para Producto -->
+            <div id="modalProducto" class="modal" aria-hidden="true">
+                <div class="modal-content">
+                    <span class="close" data-close="modalProducto">&times;</span>
+                    <h2>Nuevo Producto</h2>
+                    <form id="formProducto">
+                        <input type="hidden" id="productoId">
+                        <div class="form-group">
+                            <label for="productoNombre">Nombre</label>
+                            <input type="text" id="productoNombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productoSku">SKU</label>
+                            <input type="text" id="productoSku" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productoCantidad">Cantidad</label>
+                            <input type="number" id="productoCantidad" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productoPrecio">Precio</label>
+                            <input type="number" id="productoPrecio" step="0.01" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Guardar</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal para Usuario -->
+            <div id="modalUsuario" class="modal" aria-hidden="true">
+                <div class="modal-content">
+                    <span class="close" data-close="modalUsuario">&times;</span>
+                    <h2>Nuevo Usuario</h2>
+                    <form id="formUsuario">
+                        <input type="hidden" id="usuarioId">
+                        <div class="form-group">
+                            <label for="usuarioUsername">Username</label>
+                            <input type="text" id="usuarioUsername" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="usuarioNombreCompleto">Nombre Completo</label>
+                            <input type="text" id="usuarioNombreCompleto" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="usuarioRol">Rol</label>
+                            <select id="usuarioRol" required>
+                                <option value="">Selecciona un rol</option>
+                                <option value="ADMIN">Admin</option>
+                                <option value="OPERADOR">Operador</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="usuarioPassword">Contraseña (requerida para crear)</label>
+                            <input type="password" id="usuarioPassword">
+                        </div>
+                        <button type="submit" class="btn-primary">Guardar</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Mensaje de error -->
+            <div id="errorMessage" class="error-message"></div>
+        </main>
+    </div>
+
+    <script src="../js/dashboard.js"></script>
+</body>
+</html>
