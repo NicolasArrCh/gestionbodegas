@@ -11,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -24,29 +25,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
 public class Auditoria {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
-    @Column(nullable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime fecha = LocalDateTime.now();
+    @Column(nullable = false)
+    private LocalDateTime fechaHora;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_operacion", nullable = false)
     private TipoOperacion tipoOperacion;
 
-    @Column(
-    name = "fecha_hora",
-    nullable = false,
-    columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP"
-)
-    private LocalDateTime fechaHora = LocalDateTime.now();
-
     @ManyToOne(optional = false)
-    @JoinColumn(name = "usuario_id", nullable = false)
+    @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 
     @NotNull
@@ -59,9 +52,10 @@ public class Auditoria {
     @Column(name = "valor_nuevo", columnDefinition = "JSON")
     private String valorNuevo;
 
-    public enum TipoOperacion {
-        INSERT,
-        UPDATE,
-        DELETE
+    public enum TipoOperacion { INSERT, UPDATE, DELETE }
+
+    @PrePersist
+    public void prePersist() {
+        if (fechaHora == null) fechaHora = LocalDateTime.now();
     }
 }

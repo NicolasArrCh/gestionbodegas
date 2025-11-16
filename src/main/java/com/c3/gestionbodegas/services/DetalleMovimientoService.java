@@ -17,49 +17,59 @@ public class DetalleMovimientoService {
     @Autowired
     private DetalleMovimientoRepository detalleMovimientoRepository;
 
-    // Obtener todos los detalles de movimiento
+    // Obtener todos
     public List<DetalleMovimiento> obtenerTodos() {
         return detalleMovimientoRepository.findAll();
     }
 
-    // Buscar un detalle específico por su ID
-    public Optional<DetalleMovimiento> buscarPorId(Integer id) {
-        return detalleMovimientoRepository.findById(id);
+    // Obtener por ID (ya no tira error)
+    public DetalleMovimiento obtenerPorId(Integer id) {
+        return detalleMovimientoRepository.findById(id).orElse(null);
     }
 
-    // Guardar o actualizar un detalle de movimiento
+    // Guardar
     public DetalleMovimiento guardar(DetalleMovimiento detalleMovimiento) {
         return detalleMovimientoRepository.save(detalleMovimiento);
     }
 
-    // Eliminar un detalle por su ID
-    public boolean eliminar(Integer id) {
-        detalleMovimientoRepository.deleteById(id);
-        return false;
+    // Actualizar
+    public DetalleMovimiento actualizar(Integer id, DetalleMovimiento detalleMovimiento) {
+        Optional<DetalleMovimiento> existente = detalleMovimientoRepository.findById(id);
+
+        if (existente.isEmpty()) {
+            return null;
+        }
+
+        DetalleMovimiento detalle = existente.get();
+
+        detalle.setCantidad(detalleMovimiento.getCantidad());
+        detalle.setMovimiento(detalleMovimiento.getMovimiento());
+        detalle.setProducto(detalleMovimiento.getProducto());
+
+        return detalleMovimientoRepository.save(detalle);
     }
 
-    // Obtener todos los detalles de un movimiento específico
+    // Eliminar correctamente
+    public boolean eliminar(Integer id) {
+        if (!detalleMovimientoRepository.existsById(id)) {
+            return false;
+        }
+        detalleMovimientoRepository.deleteById(id);
+        return true;
+    }
+
+    // Buscar por movimiento
     public List<DetalleMovimiento> buscarPorMovimiento(MovimientoInventario movimientoInventario) {
         return detalleMovimientoRepository.findByMovimiento(movimientoInventario);
     }
 
-    // Obtener todos los movimientos en los que intervino un producto específico
+    // Buscar por producto
     public List<DetalleMovimiento> buscarPorProducto(Producto producto) {
         return detalleMovimientoRepository.findByProducto(producto);
     }
 
-    // Consultar detalles donde la cantidad es menor a un valor (útil para auditorías o alertas)
+    // Buscar por cantidad menor
     public List<DetalleMovimiento> buscarPorCantidadMenorA(Integer cantidad) {
         return detalleMovimientoRepository.findByCantidadLessThan(cantidad);
-    }
-
-    public DetalleMovimiento actualizar(Integer id, DetalleMovimiento detalleMovimiento) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'actualizar'");
-    }
-
-    public DetalleMovimiento obtenerPorId(Integer id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'obtenerPorId'");
     }
 }
