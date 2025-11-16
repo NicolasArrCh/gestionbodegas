@@ -2,10 +2,12 @@ package com.c3.gestionbodegas.entities;
 
 import java.math.BigDecimal;
 
+import com.c3.gestionbodegas.listeners.AuditoriaListener;
 import com.c3.gestionbodegas.model.Auditable;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -19,6 +21,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "productos")
+// @EntityListeners(AuditoriaListener.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

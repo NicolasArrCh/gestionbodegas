@@ -2,11 +2,13 @@ package com.c3.gestionbodegas.entities;
 
 import java.time.LocalDateTime;
 
+import com.c3.gestionbodegas.listeners.AuditoriaListener;
 import com.c3.gestionbodegas.model.Auditable;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -23,6 +25,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "movimientos_inventario")
+@EntityListeners(AuditoriaListener.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

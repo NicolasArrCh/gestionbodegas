@@ -1,9 +1,11 @@
 package com.c3.gestionbodegas.entities;
 
+import com.c3.gestionbodegas.listeners.AuditoriaListener;
 import com.c3.gestionbodegas.model.Auditable;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
@@ -19,6 +21,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "usuarios")
+@EntityListeners(AuditoriaListener.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

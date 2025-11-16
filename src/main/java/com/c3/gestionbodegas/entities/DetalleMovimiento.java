@@ -1,10 +1,12 @@
 package com.c3.gestionbodegas.entities;
 
+import com.c3.gestionbodegas.listeners.AuditoriaListener;
 import com.c3.gestionbodegas.model.Auditable;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -19,6 +21,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "detalle_movimiento")
+@EntityListeners(AuditoriaListener.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

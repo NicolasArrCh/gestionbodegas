@@ -60,6 +60,38 @@ CREATE TABLE auditoria (
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
 
+-- Tabla usuarios
+ALTER TABLE usuarios 
+ADD COLUMN fecha_creacion DATETIME,
+ADD COLUMN fecha_modificacion DATETIME,
+ADD COLUMN creado_por VARCHAR(255),
+ADD COLUMN modificado_por VARCHAR(255);
 
+-- Tabla bodegas
+ALTER TABLE bodegas 
+ADD COLUMN fecha_creacion DATETIME,
+ADD COLUMN fecha_modificacion DATETIME,
+ADD COLUMN creado_por VARCHAR(255),
+ADD COLUMN modificado_por VARCHAR(255);
 
+-- Tabla productos
+ALTER TABLE productos 
+ADD COLUMN fecha_creacion DATETIME,
+ADD COLUMN fecha_modificacion DATETIME,
+ADD COLUMN creado_por VARCHAR(255),
+ADD COLUMN modificado_por VARCHAR(255);
+
+-- Tabla movimientos_inventario
+ALTER TABLE movimientos_inventario 
+ADD COLUMN fecha_creacion DATETIME,
+ADD COLUMN fecha_modificacion DATETIME,
+ADD COLUMN creado_por VARCHAR(255),
+ADD COLUMN modificado_por VARCHAR(255);
+
+-- Tabla detalle_movimiento
+ALTER TABLE detalle_movimiento 
+ADD COLUMN fecha_creacion DATETIME,
+ADD COLUMN fecha_modificacion DATETIME,
+ADD COLUMN creado_por VARCHAR(255),
+ADD COLUMN modificado_por VARCHAR(255);
 

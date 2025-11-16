@@ -68,3 +68,32 @@ INSERT INTO auditoria (id, tipo_operacion, usuario_id, entidad_afectada, valor_a
 (4, 'UPDATE', 3, 'MovimientoInventario', '{"id":3,"tipo":"SALIDA"}', '{"id":3,"tipo":"TRANSFERENCIA"}'),
 (5, 'INSERT', 5, 'MovimientoInventario', NULL, '{"id":6,"tipo":"TRANSFERENCIA"}')
 
+-- Actualizar usuarios existentes
+UPDATE usuarios 
+SET fecha_creacion = NOW(), 
+    fecha_modificacion = NOW() 
+WHERE fecha_creacion IS NULL;
+
+-- Actualizar bodegas existentes
+UPDATE bodegas 
+SET fecha_creacion = NOW(), 
+    fecha_modificacion = NOW() 
+WHERE fecha_creacion IS NULL;
+
+-- Actualizar productos existentes
+UPDATE productos 
+SET fecha_creacion = NOW(), 
+    fecha_modificacion = NOW() 
+WHERE fecha_creacion IS NULL;
+
+-- Actualizar movimientos existentes
+UPDATE movimientos_inventario 
+SET fecha_creacion = NOW(), 
+    fecha_modificacion = NOW() 
+WHERE fecha_creacion IS NULL;
+
+-- Actualizar detalles existentes
+UPDATE detalle_movimiento 
+SET fecha_creacion = NOW(), 
+    fecha_modificacion = NOW() 
+WHERE fecha_creacion IS NULL;
