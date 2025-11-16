@@ -12,7 +12,9 @@ CREATE TABLE productos (
     nombre VARCHAR(100) NOT NULL,
     categoria VARCHAR(100) NOT NULL,
     stock INT NOT NULL,
-    precio DECIMAL(10,2) NOT NULL
+    precio DECIMAL(10,2) NOT NULL,
+    bodega_id INT NOT NULL,
+    FOREIGN KEY (bodega_id) references bodegas(id)
 );
 
 CREATE TABLE usuarios (

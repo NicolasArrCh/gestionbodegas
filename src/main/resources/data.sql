@@ -5,12 +5,12 @@ INSERT INTO bodegas (nombre, ubicacion, capacidad, encargado_id) VALUES
 ('Bodega Occidente', 'Av. 80 #45-12, Medellín', 2500, 4),
 ('Bodega Oriente', 'Aeropuerto José María Córdova, Rionegro', 6000, 4);
 
-INSERT INTO productos (nombre, categoria, stock, precio) VALUES
-('Monitor LG 27"', 'Electrónica', 35, 950000.00),
-('Teclado Mecánico Redragon', 'Periféricos', 80, 220000.00),
-('Mouse Logitech G Pro', 'Periféricos', 60, 180000.00),
-('Silla Gamer Cougar Armor', 'Muebles', 15, 1250000.00),
-('Disco SSD 1TB Samsung', 'Almacenamiento', 40, 380000.00);
+INSERT INTO productos (nombre, categoria, stock, precio, bodega_id) VALUES
+('Monitor LG 27"', 'Electrónica', 35, 950000.00, 6),
+('Teclado Mecánico Redragon', 'Periféricos', 80, 220000.00, 7),
+('Mouse Logitech G Pro', 'Periféricos', 60, 180000.00, 8),
+('Silla Gamer Cougar Armor', 'Muebles', 15, 1250000.00, 9),
+('Disco SSD 1TB Samsung', 'Almacenamiento', 40, 380000.00, 9);
 
 INSERT INTO usuarios (username, password, nombre_completo, rol) VALUES
 ('cgomez', '$2a$10$aoScDQEO.4uKepA6cBbkZugy26XEvT1Pa/fD1aemCyaO0h0QcWf0S', 'Carlos Gómez', 'ADMIN'),
