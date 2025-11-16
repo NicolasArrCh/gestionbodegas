@@ -514,6 +514,77 @@ document.addEventListener('DOMContentLoaded', () => {
         })();
     });
 
+    const formMovimiento = document.getElementById('formMovimiento');
+
+    if (formMovimiento) {
+        // Aseguramos que el listener solo se registre una vez
+        formMovimiento.removeEventListener && formMovimiento.removeEventListener('submit', window.__movimientoSubmitHandler);
+
+        const movimientoSubmitHandler = async (e) => {
+            e.preventDefault();
+            console.log('📝 Formulario Movimiento submitido');
+            const submitBtn = formMovimiento.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.disabled = true;
+
+            try {
+                // Leer valores del formulario
+                const tipo = document.getElementById('movimientoTipo').value;
+                const origenVal = document.getElementById('movimientoBodegaOrigen').value;
+                const destinoVal = document.getElementById('movimientoBodegaDestino').value;
+                const productoVal = document.getElementById('movimientoProducto').value;
+                const cantidadVal = document.getElementById('movimientoCantidad').value;
+
+                // Validaciones básicas
+                if (!tipo) { showError('❌ Selecciona tipo'); return; }
+                if (!productoVal) { showError('❌ Selecciona producto'); return; }
+                if (!cantidadVal || Number.parseInt(cantidadVal, 10) <= 0) { showError('❌ Cantidad inválida'); return; }
+
+                if (tipo === 'ENTRADA' && !destinoVal) { showError('❌ ENTRADA necesita destino'); return; }
+                if (tipo === 'SALIDA' && !origenVal) { showError('❌ SALIDA necesita origen'); return; }
+                if (tipo === 'TRANSFERENCIA' && (!origenVal || !destinoVal)) { showError('❌ TRANSFERENCIA necesita ambos'); return; }
+
+                // Obtener usuario actual
+                const username = localStorage.getItem('username');
+                if (!username) { showError('❌ No se pudo obtener usuario'); return; }
+                const usuario = await apiCall('GET', `/usuarios/username/${encodeURIComponent(username)}`);
+                if (!usuario) { showError('❌ No se pudo obtener usuario'); return; }
+
+                // Crear movimiento
+                const movimientoPayload = {
+                    tipo: tipo,
+                    usuario: { id: usuario.id },
+                    bodegaOrigen: origenVal ? { id: Number.parseInt(origenVal, 10) } : null,
+                    bodegaDestino: destinoVal ? { id: Number.parseInt(destinoVal, 10) } : null
+                };
+
+                const movimientoCreado = await apiCall('POST', '/movimientos', movimientoPayload);
+
+                // Crear detalle
+                const detallePayload = {
+                    movimiento: { id: movimientoCreado.id },
+                    producto: { id: Number.parseInt(productoVal, 10) },
+                    cantidad: Number.parseInt(cantidadVal, 10)
+                };
+
+                await apiCall('POST', '/detalle-movimientos', detallePayload);
+
+                closeModal('modalMovimiento');
+                showSuccess('✅ Movimiento guardado exitosamente');
+                await loadMovimientos();
+
+            } catch (err) {
+                console.error('Error guardando movimiento:', err);
+                showError('❌ ' + (err.message || 'Error desconocido'));
+            } finally {
+                if (submitBtn) submitBtn.disabled = false;
+            }
+        };
+
+        // Store handler reference so we can remove/register safely
+        window.__movimientoSubmitHandler = movimientoSubmitHandler;
+        formMovimiento.addEventListener('submit', movimientoSubmitHandler);
+    }
+
     const btnNuevoProducto = document.getElementById('agregarProductoBtn');
     if (btnNuevoProducto) btnNuevoProducto.addEventListener('click', async () => {
         const form = document.getElementById('formProducto'); 
@@ -633,114 +704,6 @@ document.addEventListener('DOMContentLoaded', () => {
             try { console.log('DEBUG token:', getToken()); } catch(e) { console.log('DEBUG token: <no access>'); }
             console.log('DEBUG payload bodega:', payload);
     
-    
-    const formMovimiento = document.getElementById('formMovimiento');
-
-    if (formMovimiento) formMovimiento.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        console.log('📝 Formulario Movimiento submitido');
-        console.log('═══════════════════════════════════════════════════════════');
-        
-        try {
-            // Leer valores del formulario
-            const tipo = document.getElementById('movimientoTipo').value;
-            const origenVal = document.getElementById('movimientoBodegaOrigen').value;
-            const destinoVal = document.getElementById('movimientoBodegaDestino').value;
-            const productoVal = document.getElementById('movimientoProducto').value;
-            const cantidadVal = document.getElementById('movimientoCantidad').value;
-
-            console.log('📋 PASO 1: Leer valores');
-            console.log({tipo, origenVal, destinoVal, productoVal, cantidadVal});
-
-            // Validaciones
-            console.log('📋 PASO 2: Validar campos');
-            if (!tipo) { showError('❌ Selecciona tipo'); console.error('FALLO: Tipo vacío'); return; }
-            if (!productoVal) { showError('❌ Selecciona producto'); console.error('FALLO: Producto vacío'); return; }
-            if (!cantidadVal || Number.parseInt(cantidadVal, 10) <= 0) { showError('❌ Cantidad inválida'); console.error('FALLO: Cantidad inválida'); return; }
-            console.log('✅ Campos básicos OK');
-
-            // Validaciones según tipo
-            console.log('📋 PASO 3: Validar según tipo');
-            if (tipo === 'ENTRADA' && !destinoVal) { showError('❌ ENTRADA necesita destino'); console.error('FALLO: ENTRADA sin destino'); return; }
-            if (tipo === 'SALIDA' && !origenVal) { showError('❌ SALIDA necesita origen'); console.error('FALLO: SALIDA sin origen'); return; }
-            if (tipo === 'TRANSFERENCIA' && (!origenVal || !destinoVal)) { showError('❌ TRANSFERENCIA necesita ambos'); console.error('FALLO: TRANSFERENCIA incompleta'); return; }
-            console.log('✅ Validación según tipo OK');
-
-            // Obtener usuario actual
-            console.log('📋 PASO 4: Obtener usuario');
-            const username = localStorage.getItem('username');
-            console.log('Usuario del localStorage:', username);
-            
-            let usuario = null;
-            if (username) {
-                try { 
-                    console.log('Buscando usuario en BD...');
-                    usuario = await apiCall('GET', `/usuarios/username/${encodeURIComponent(username)}`); 
-                    console.log('✅ Usuario encontrado:', usuario);
-                } catch(e) { 
-                    console.error('❌ Error obteniendo usuario:', e.message); 
-                    usuario = null; 
-                }
-            }
-            
-            if (!usuario) { 
-                console.error('FALLO: No hay usuario');
-                showError('❌ No se pudo obtener usuario'); 
-                return; 
-            }
-
-            // Crear payload del movimiento
-            console.log('📋 PASO 5: Preparar payload movimiento');
-            const movimientoPayload = {
-                tipo: tipo,
-                usuario: { id: usuario.id },
-                bodegaOrigen: origenVal ? { id: Number.parseInt(origenVal, 10) } : null,
-                bodegaDestino: destinoVal ? { id: Number.parseInt(destinoVal, 10) } : null
-            };
-            console.log('📦 Payload a enviar:');
-            console.log(JSON.stringify(movimientoPayload, null, 2));
-
-            // Crear movimiento
-            console.log('� PASO 6: POST /api/movimientos');
-            const movimientoCreado = await apiCall('POST', '/movimientos', movimientoPayload);
-            console.log('✅ Movimiento creado exitosamente:');
-            console.log(movimientoCreado);
-
-            // Crear detalle del movimiento
-            console.log('📋 PASO 7: Preparar payload detalle');
-            const detallePayload = {
-                movimiento: { id: movimientoCreado.id },
-                producto: { id: Number.parseInt(productoVal, 10) },
-                cantidad: Number.parseInt(cantidadVal, 10)
-            };
-            console.log('📦 Payload detalle a enviar:');
-            console.log(JSON.stringify(detallePayload, null, 2));
-            
-            console.log('� PASO 8: POST /api/detalle-movimientos');
-            const detalleCreado = await apiCall('POST', '/detalle-movimientos', detallePayload);
-            console.log('✅ Detalle movimiento creado exitosamente:');
-            console.log(detalleCreado);
-
-            // Éxito
-            console.log('═══════════════════════════════════════════════════════════');
-            console.log('✅ TODO COMPLETADO CON ÉXITO');
-            console.log('═══════════════════════════════════════════════════════════');
-            
-            closeModal('modalMovimiento');
-            showSuccess('✅ Movimiento guardado exitosamente');
-            
-            // Recargar tabla
-            await loadMovimientos();
-            
-        } catch (err) {
-            console.error('═══════════════════════════════════════════════════════════');
-            console.error('❌ ERROR CAPTURADO EN CATCH');
-            console.error('Mensaje:', err.message);
-            console.error('Stack:', err.stack);
-            console.error('═══════════════════════════════════════════════════════════');
-            showError('❌ ' + err.message);
-        }
-    });
             if (id) await apiCall('PUT', `/bodegas/${id}`, payload);
             else await apiCall('POST', '/bodegas', payload);
             closeModal('modalBodega');
