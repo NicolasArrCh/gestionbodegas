@@ -38,7 +38,11 @@ public class Auditoria {
     @Column(name = "tipo_operacion", nullable = false)
     private TipoOperacion tipoOperacion;
 
-    @Column(name = "fecha_hora", nullable = false)
+    @Column(
+    name = "fecha_hora",
+    nullable = false,
+    columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP"
+)
     private LocalDateTime fechaHora = LocalDateTime.now();
 
     @ManyToOne(optional = false)

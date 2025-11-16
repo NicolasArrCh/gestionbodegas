@@ -1,3 +1,11 @@
+CREATE TABLE usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    nombre_completo VARCHAR(150) NOT NULL,
+    rol ENUM('ADMIN', 'ENCARGADO', 'OPERADOR') DEFAULT 'OPERADOR'
+);
+
 CREATE TABLE bodegas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
@@ -12,18 +20,12 @@ CREATE TABLE productos (
     nombre VARCHAR(100) NOT NULL,
     categoria VARCHAR(100) NOT NULL,
     stock INT NOT NULL,
-    precio DECIMAL(10,2) NOT NULL,
+    precio DECIMAL(10,2) NOT null,
     bodega_id INT NOT NULL,
     FOREIGN KEY (bodega_id) references bodegas(id)
 );
 
-CREATE TABLE usuarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    nombre_completo VARCHAR(150) NOT NULL,
-    rol ENUM('ADMIN', 'ENCARGADO', 'OPERADOR') DEFAULT 'OPERADOR'
-);
+
 
 CREATE TABLE movimientos_inventario (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -58,3 +60,7 @@ CREATE TABLE auditoria (
     valor_nuevo JSON NULL,
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
+
+
+
+
