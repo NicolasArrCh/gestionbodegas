@@ -60,4 +60,6 @@ public class UsuarioService {
     public List<Usuario> buscarPorRol(Usuario.Rol rol) {
         return usuarioRepository.findByRol(rol);
     }
+
+    
 }

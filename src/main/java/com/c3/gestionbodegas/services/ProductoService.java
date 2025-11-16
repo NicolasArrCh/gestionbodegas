@@ -32,9 +32,12 @@ public class ProductoService {
 
     // Eliminar un producto por su ID
     public boolean eliminar(Integer id) {
+    if (productoRepository.existsById(id)) {
         productoRepository.deleteById(id);
-        return false;
+        return true;
     }
+    return false;
+}
 
     // Buscar producto por nombre exacto
     public Producto buscarPorNombre(String nombre) {
@@ -62,12 +65,17 @@ public class ProductoService {
     }
 
     public Producto obtenerPorId(Integer id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'obtenerPorId'");
-    }
+    return productoRepository.findById(id).orElse(null);
+}
 
     public Producto actualizar(Integer id, Producto producto) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'actualizar'");
-    }
+    return productoRepository.findById(id).map(p -> {
+        p.setNombre(producto.getNombre());
+        p.setCategoria(producto.getCategoria());
+        p.setStock(producto.getStock());
+        p.setPrecio(producto.getPrecio());
+        p.setBodega(producto.getBodega());
+        return productoRepository.save(p);
+    }).orElse(null);
+}
 }
