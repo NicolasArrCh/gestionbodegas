@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "detalle_movimiento")
@@ -20,23 +21,41 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
 public class DetalleMovimiento {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull
+    @NotNull(message = "Movimiento es requerido")
     @ManyToOne(optional = false)
     @JoinColumn(name = "movimiento_id", nullable = false)
     private MovimientoInventario movimiento;
 
-    @NotNull
+    @NotNull(message = "Producto es requerido")
     @ManyToOne(optional = false)
     @JoinColumn(name = "producto_id", nullable = false)
     private Producto producto;
 
-    @NotNull
+    @NotNull(message = "Cantidad es requerida")
     @Column(nullable = false)
     private Integer cantidad;
+
+    // Alias para JSON: permite recibir tanto "movimiento_id" como "movimientoId"
+    @JsonProperty("movimiento_id")
+    private void setMovimientoId(Integer movimientoId) {
+        if (movimientoId != null) {
+            this.movimiento = new MovimientoInventario();
+            this.movimiento.setId(movimientoId);
+        }
+    }
+
+    // Alias para JSON: permite recibir tanto "producto_id" como "productoId"
+    @JsonProperty("producto_id")
+    private void setProductoId(Integer productoId) {
+        if (productoId != null) {
+            this.producto = new Producto();
+            this.producto.setId(productoId);
+        }
+    }
 }

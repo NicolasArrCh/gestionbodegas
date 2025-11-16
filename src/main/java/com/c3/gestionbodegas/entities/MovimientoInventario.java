@@ -16,6 +16,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "movimientos_inventario")
@@ -23,37 +24,61 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
 public class MovimientoInventario {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NotNull
-    @Column(nullable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime fecha = LocalDateTime.now();
+    @Column(nullable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP", insertable = false, updatable = false)
+    private LocalDateTime fecha;
 
+    @NotNull(message = "Tipo es requerido")
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private TipoMovimiento tipo;
 
+    @NotNull(message = "Usuario es requerido")
     @ManyToOne(optional = false)
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
     @ManyToOne
-    @JoinColumn(name = "bodega_origen_id")
+    @JoinColumn(name = "bodega_origen_id", nullable = true)
     private Bodega bodegaOrigen;
 
     @ManyToOne
-    @JoinColumn(name = "bodega_destino_id")
+    @JoinColumn(name = "bodega_destino_id", nullable = true)
     private Bodega bodegaDestino;
+
+    // Alias para JSON: permite recibir tanto "usuario_id" como "usuarioId"
+    @JsonProperty("usuario_id")
+    private void setUsuarioId(Integer usuarioId) {
+        if (usuarioId != null) {
+            this.usuario = new Usuario();
+            this.usuario.setId(usuarioId);
+        }
+    }
+
+    @JsonProperty("bodega_origen_id")
+    private void setBodegaOrigenId(Integer bodegaOrigenId) {
+        if (bodegaOrigenId != null) {
+            this.bodegaOrigen = new Bodega();
+            this.bodegaOrigen.setId(bodegaOrigenId);
+        }
+    }
+
+    @JsonProperty("bodega_destino_id")
+    private void setBodegaDestinoId(Integer bodegaDestinoId) {
+        if (bodegaDestinoId != null) {
+            this.bodegaDestino = new Bodega();
+            this.bodegaDestino.setId(bodegaDestinoId);
+        }
+    }
 
     public enum TipoMovimiento {
         ENTRADA,
         SALIDA,
         TRANSFERENCIA
     }
-    
-    
 }

@@ -8,11 +8,24 @@ const logoutBtn = document.getElementById('logoutBtn');
 const usuarioNombre = document.getElementById('usuarioNombre');
 const errorMessage = document.getElementById('errorMessage');
 
+// Manejador global de errores para mostrar errores JS en pantalla (útil para debugging)
+window.addEventListener('error', (evt) => {
+    console.error('Global error captured:', evt.message, evt.error);
+    try { showError('Error en la página: ' + (evt.message || 'Desconocido')); } catch(e) { /* ignore */ }
+});
+window.addEventListener('unhandledrejection', (evt) => {
+    console.error('Unhandled promise rejection:', evt.reason);
+    try { showError('Error en promesa: ' + (evt.reason?.message || evt.reason)); } catch(e) { /* ignore */ }
+});
+
 // Event listeners
 menuLinks.forEach(link => {
     link.addEventListener('click', handleMenuClick);
 });
 
+logoutBtn.addEventListener('click', handleLogout);
+
+// Variables globales para manejo de líneas de movimiento
 logoutBtn.addEventListener('click', handleLogout);
 
 // Verificar autenticación y rol de admin
@@ -181,7 +194,7 @@ async function loadProductos() {
         const productos = await apiCall('GET', '/productos');
         
         if (!productos || productos.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay productos registrados</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay productos registrados</td></tr>';
             return;
         }
 
@@ -189,9 +202,10 @@ async function loadProductos() {
             <tr>
                 <td>${producto.id || 'N/A'}</td>
                 <td>${producto.nombre || 'N/A'}</td>
-                <td>${producto.sku || 'N/A'}</td>
-                <td>${producto.cantidad || 0}</td>
+                <td>${producto.categoria || 'N/A'}</td>
+                <td>${producto.stock || 0}</td>
                 <td>$${(producto.precio || 0).toFixed(2)}</td>
+                <td>${producto.bodega?.nombre || 'N/A'}</td>
                 <td>
                     <div class="table-actions">
                         <button class="btn-edit" onclick="editProducto(${producto.id})">Editar</button>
@@ -202,7 +216,7 @@ async function loadProductos() {
         `).join('');
     } catch (error) {
         console.error('❌ Error cargando productos:', error);
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center">Error al cargar productos</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">Error al cargar productos</td></tr>';
     }
 }
 
@@ -220,12 +234,22 @@ async function loadMovimientos() {
             return;
         }
 
-        tbody.innerHTML = movimientos.map(movimiento => `
+        tbody.innerHTML = movimientos.map(movimiento => {
+            let bodegas = '';
+            if (movimiento.tipo === 'ENTRADA') {
+                bodegas = `Destino: ${movimiento.bodegaDestino?.nombre || 'N/A'}`;
+            } else if (movimiento.tipo === 'SALIDA') {
+                bodegas = `Origen: ${movimiento.bodegaOrigen?.nombre || 'N/A'}`;
+            } else if (movimiento.tipo === 'TRANSFERENCIA') {
+                bodegas = `${movimiento.bodegaOrigen?.nombre || 'N/A'} → ${movimiento.bodegaDestino?.nombre || 'N/A'}`;
+            }
+            
+            return `
             <tr>
                 <td>${movimiento.id || 'N/A'}</td>
                 <td>${movimiento.tipo || 'N/A'}</td>
-                <td>${movimiento.bodegaId || 'N/A'}</td>
-                <td>${movimiento.cantidad || 0}</td>
+                <td>${bodegas}</td>
+                <td>${movimiento.usuario?.username || 'N/A'}</td>
                 <td>${new Date(movimiento.fecha).toLocaleDateString('es-ES')}</td>
                 <td>
                     <div class="table-actions">
@@ -233,7 +257,7 @@ async function loadMovimientos() {
                     </div>
                 </td>
             </tr>
-        `).join('');
+        `}).join('');
     } catch (error) {
         console.error('❌ Error cargando movimientos:', error);
         tbody.innerHTML = '<tr><td colspan="6" class="text-center">Error al cargar movimientos</td></tr>';
@@ -339,16 +363,22 @@ async function apiCall(method, endpoint, body = null) {
         throw new Error('Token expirado');
     }
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Error:', errorText);
-        throw new Error(`Error ${response.status}: ${errorText}`);
-    }
+    // Para DELETE con status 204, no hay contenido
+        if (response.status === 204) {
+            console.log('✅ Recurso eliminado exitosamente');
+            return null;
+        }
 
-    const data = await response.json();
-    console.log('📦 Datos recibidos:', data);
-    return data;
-}
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Error:', errorText);
+            throw new Error(`Error ${response.status}: ${errorText}`);
+        }
+
+        const data = await response.json();
+        console.log('📦 Datos recibidos:', data);
+        return data;
+    }
 
 /**
  * Muestra un mensaje de error
@@ -389,14 +419,12 @@ function handleLogout() {
 /**
  * Funciones para acciones (eliminar, editar, etc)
  */
-function editBodega(id) { 
-    alert('Editar bodega: ' + id); 
-}
 async function deleteBodega(id) { 
     if (confirm('¿Estás seguro de que quieres eliminar esta bodega?')) {
         try {
             await apiCall('DELETE', `/bodegas/${id}`);
             showSuccess('✅ Bodega eliminada exitosamente');
+                await new Promise(resolve => setTimeout(resolve, 500));
             loadBodegas();
         } catch (error) {
             showError('❌ Error eliminando bodega: ' + error.message);
@@ -404,15 +432,13 @@ async function deleteBodega(id) {
     }
 }
 
-function editProducto(id) { 
-    alert('Editar producto: ' + id); 
-}
 
 async function deleteProducto(id) { 
     if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
         try {
             await apiCall('DELETE', `/productos/${id}`);
             showSuccess('✅ Producto eliminado exitosamente');
+                await new Promise(resolve => setTimeout(resolve, 500));
             loadProductos();
         } catch (error) {
             showError('❌ Error eliminando producto: ' + error.message);
@@ -420,19 +446,12 @@ async function deleteProducto(id) {
     }
 }
 
-function editMovimiento(id) { 
-    alert('Ver movimiento: ' + id); 
-}
-
-function editUsuario(id) { 
-    alert('Editar usuario: ' + id); 
-}
-
 async function deleteUsuario(id) { 
     if (confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
         try {
             await apiCall('DELETE', `/usuarios/${id}`);
             showSuccess('✅ Usuario eliminado exitosamente');
+                await new Promise(resolve => setTimeout(resolve, 500));
             loadUsuarios();
         } catch (error) {
             showError('❌ Error eliminando usuario: ' + error.message);
@@ -476,12 +495,102 @@ document.addEventListener('DOMContentLoaded', () => {
         form.reset();
         document.getElementById('bodegaId').value = '';
         document.querySelector('#modalBodega h2').textContent = 'Nueva Bodega';
-        openModal('modalBodega');
+        // Cargar lista de usuarios para seleccionar encargado
+        (async () => {
+            try {
+                const usuarios = await apiCall('GET', '/usuarios');
+                const select = document.getElementById('bodegaEncargadoId');
+                select.innerHTML = '<option value="">Selecciona un encargado</option>';
+                usuarios.forEach(u => {
+                    const opt = document.createElement('option');
+                    opt.value = u.id;
+                    opt.textContent = u.username || (u.nombreCompleto || ('Usuario ' + u.id));
+                    select.appendChild(opt);
+                });
+            } catch (err) {
+                console.error('Error cargando usuarios para encargado:', err);
+            }
+            openModal('modalBodega');
+        })();
     });
 
     const btnNuevoProducto = document.getElementById('agregarProductoBtn');
-    if (btnNuevoProducto) btnNuevoProducto.addEventListener('click', () => {
-        const form = document.getElementById('formProducto'); form.reset(); document.getElementById('productoId').value = ''; document.querySelector('#modalProducto h2').textContent = 'Nuevo Producto'; openModal('modalProducto');
+    if (btnNuevoProducto) btnNuevoProducto.addEventListener('click', async () => {
+        const form = document.getElementById('formProducto'); 
+        form.reset(); 
+        document.getElementById('productoId').value = ''; 
+        document.querySelector('#modalProducto h2').textContent = 'Nuevo Producto'; 
+        
+        // Cargar bodegas en el select
+        try {
+            const bodegas = await apiCall('GET', '/bodegas');
+            const select = document.getElementById('productoBodegaId');
+            select.innerHTML = '<option value="">Selecciona una bodega</option>';
+            bodegas.forEach(bodega => {
+                const option = document.createElement('option');
+                option.value = bodega.id;
+                option.textContent = bodega.nombre;
+                select.appendChild(option);
+            });
+        } catch (err) {
+            console.error('Error cargando bodegas:', err);
+        }
+        
+        openModal('modalProducto');
+    });
+
+    const btnNuevoMovimiento = document.getElementById('agregarMovimientoBtn');
+    if (btnNuevoMovimiento) btnNuevoMovimiento.addEventListener('click', async () => {
+        console.log('🔘 Abriendo modal Nuevo Movimiento');
+        
+        // Reset formulario
+        const form = document.getElementById('formMovimiento');
+        form.reset();
+        document.getElementById('movimientoId').value = '';
+        document.querySelector('#modalMovimiento h2').textContent = 'Nuevo Movimiento';
+
+        // Cargar bodegas y productos
+        try {
+            console.log('📥 Cargando bodegas y productos...');
+            const bodegas = await apiCall('GET', '/bodegas');
+            const productos = await apiCall('GET', '/productos');
+            console.log('✅ Bodegas:', bodegas.length, 'Productos:', productos.length);
+
+            // Poblar select de bodegas origen
+            const origen = document.getElementById('movimientoBodegaOrigen');
+            const destino = document.getElementById('movimientoBodegaDestino');
+            origen.innerHTML = '<option value="">Ninguna</option>';
+            destino.innerHTML = '<option value="">Ninguna</option>';
+            
+            for (const b of bodegas) {
+                const o = document.createElement('option'); 
+                o.value = b.id; 
+                o.textContent = b.nombre; 
+                origen.appendChild(o);
+                
+                const d = document.createElement('option'); 
+                d.value = b.id; 
+                d.textContent = b.nombre; 
+                destino.appendChild(d);
+            }
+
+            // Poblar select de productos
+            const prodSelect = document.getElementById('movimientoProducto');
+            prodSelect.innerHTML = '<option value="">Selecciona un producto</option>';
+            for (const p of productos) {
+                const opt = document.createElement('option'); 
+                opt.value = p.id; 
+                opt.textContent = p.nombre; 
+                prodSelect.appendChild(opt);
+            }
+            
+            console.log('✅ Selects poblados correctamente');
+        } catch (err) {
+            console.error('❌ Error cargando bodegas/productos:', err);
+            showError('❌ Error cargando datos: ' + err.message);
+        }
+
+        openModal('modalMovimiento');
     });
 
     const btnNuevoUsuario = document.getElementById('agregarUsuarioBtn');
@@ -514,7 +623,124 @@ document.addEventListener('DOMContentLoaded', () => {
         const ubicacion = document.getElementById('bodegaUbicacion').value;
         const capacidad = parseInt(document.getElementById('bodegaCapacidad').value,10);
         try {
+            const encargadoIdValue = document.getElementById('bodegaEncargadoId') ? document.getElementById('bodegaEncargadoId').value : null;
             const payload = { nombre, ubicacion, capacidad };
+            if (encargadoIdValue) {
+                const encargadoId = Number.parseInt(encargadoIdValue, 10);
+                if (!isNaN(encargadoId)) payload.encargado = { id: encargadoId };
+            }
+            // Logging para depuración: token y payload
+            try { console.log('DEBUG token:', getToken()); } catch(e) { console.log('DEBUG token: <no access>'); }
+            console.log('DEBUG payload bodega:', payload);
+    
+    
+    const formMovimiento = document.getElementById('formMovimiento');
+
+    if (formMovimiento) formMovimiento.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        console.log('📝 Formulario Movimiento submitido');
+        console.log('═══════════════════════════════════════════════════════════');
+        
+        try {
+            // Leer valores del formulario
+            const tipo = document.getElementById('movimientoTipo').value;
+            const origenVal = document.getElementById('movimientoBodegaOrigen').value;
+            const destinoVal = document.getElementById('movimientoBodegaDestino').value;
+            const productoVal = document.getElementById('movimientoProducto').value;
+            const cantidadVal = document.getElementById('movimientoCantidad').value;
+
+            console.log('📋 PASO 1: Leer valores');
+            console.log({tipo, origenVal, destinoVal, productoVal, cantidadVal});
+
+            // Validaciones
+            console.log('📋 PASO 2: Validar campos');
+            if (!tipo) { showError('❌ Selecciona tipo'); console.error('FALLO: Tipo vacío'); return; }
+            if (!productoVal) { showError('❌ Selecciona producto'); console.error('FALLO: Producto vacío'); return; }
+            if (!cantidadVal || Number.parseInt(cantidadVal, 10) <= 0) { showError('❌ Cantidad inválida'); console.error('FALLO: Cantidad inválida'); return; }
+            console.log('✅ Campos básicos OK');
+
+            // Validaciones según tipo
+            console.log('📋 PASO 3: Validar según tipo');
+            if (tipo === 'ENTRADA' && !destinoVal) { showError('❌ ENTRADA necesita destino'); console.error('FALLO: ENTRADA sin destino'); return; }
+            if (tipo === 'SALIDA' && !origenVal) { showError('❌ SALIDA necesita origen'); console.error('FALLO: SALIDA sin origen'); return; }
+            if (tipo === 'TRANSFERENCIA' && (!origenVal || !destinoVal)) { showError('❌ TRANSFERENCIA necesita ambos'); console.error('FALLO: TRANSFERENCIA incompleta'); return; }
+            console.log('✅ Validación según tipo OK');
+
+            // Obtener usuario actual
+            console.log('📋 PASO 4: Obtener usuario');
+            const username = localStorage.getItem('username');
+            console.log('Usuario del localStorage:', username);
+            
+            let usuario = null;
+            if (username) {
+                try { 
+                    console.log('Buscando usuario en BD...');
+                    usuario = await apiCall('GET', `/usuarios/username/${encodeURIComponent(username)}`); 
+                    console.log('✅ Usuario encontrado:', usuario);
+                } catch(e) { 
+                    console.error('❌ Error obteniendo usuario:', e.message); 
+                    usuario = null; 
+                }
+            }
+            
+            if (!usuario) { 
+                console.error('FALLO: No hay usuario');
+                showError('❌ No se pudo obtener usuario'); 
+                return; 
+            }
+
+            // Crear payload del movimiento
+            console.log('📋 PASO 5: Preparar payload movimiento');
+            const movimientoPayload = {
+                tipo: tipo,
+                usuario: { id: usuario.id },
+                bodegaOrigen: origenVal ? { id: Number.parseInt(origenVal, 10) } : null,
+                bodegaDestino: destinoVal ? { id: Number.parseInt(destinoVal, 10) } : null
+            };
+            console.log('📦 Payload a enviar:');
+            console.log(JSON.stringify(movimientoPayload, null, 2));
+
+            // Crear movimiento
+            console.log('� PASO 6: POST /api/movimientos');
+            const movimientoCreado = await apiCall('POST', '/movimientos', movimientoPayload);
+            console.log('✅ Movimiento creado exitosamente:');
+            console.log(movimientoCreado);
+
+            // Crear detalle del movimiento
+            console.log('📋 PASO 7: Preparar payload detalle');
+            const detallePayload = {
+                movimiento: { id: movimientoCreado.id },
+                producto: { id: Number.parseInt(productoVal, 10) },
+                cantidad: Number.parseInt(cantidadVal, 10)
+            };
+            console.log('📦 Payload detalle a enviar:');
+            console.log(JSON.stringify(detallePayload, null, 2));
+            
+            console.log('� PASO 8: POST /api/detalle-movimientos');
+            const detalleCreado = await apiCall('POST', '/detalle-movimientos', detallePayload);
+            console.log('✅ Detalle movimiento creado exitosamente:');
+            console.log(detalleCreado);
+
+            // Éxito
+            console.log('═══════════════════════════════════════════════════════════');
+            console.log('✅ TODO COMPLETADO CON ÉXITO');
+            console.log('═══════════════════════════════════════════════════════════');
+            
+            closeModal('modalMovimiento');
+            showSuccess('✅ Movimiento guardado exitosamente');
+            
+            // Recargar tabla
+            await loadMovimientos();
+            
+        } catch (err) {
+            console.error('═══════════════════════════════════════════════════════════');
+            console.error('❌ ERROR CAPTURADO EN CATCH');
+            console.error('Mensaje:', err.message);
+            console.error('Stack:', err.stack);
+            console.error('═══════════════════════════════════════════════════════════');
+            showError('❌ ' + err.message);
+        }
+    });
             if (id) await apiCall('PUT', `/bodegas/${id}`, payload);
             else await apiCall('POST', '/bodegas', payload);
             closeModal('modalBodega');
@@ -528,11 +754,13 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const id = document.getElementById('productoId').value;
         const nombre = document.getElementById('productoNombre').value;
-        const sku = document.getElementById('productoSku').value;
-        const cantidad = parseInt(document.getElementById('productoCantidad').value,10);
-        const precio = parseFloat(document.getElementById('productoPrecio').value);
+        const categoria = document.getElementById('productoCategoria').value;
+        const stock = Number.parseInt(document.getElementById('productoStock').value, 10);
+        const precio = Number.parseFloat(document.getElementById('productoPrecio').value);
+        const bodegaId = Number.parseInt(document.getElementById('productoBodegaId').value, 10);
         try {
-            const payload = { nombre, sku, cantidad, precio };
+            const bodega = { id: bodegaId };
+            const payload = { nombre, categoria, stock, precio, bodega };
             if (id) await apiCall('PUT', `/productos/${id}`, payload);
             else await apiCall('POST', '/productos', payload);
             closeModal('modalProducto');
@@ -574,6 +802,21 @@ async function editBodega(id) {
         document.getElementById('bodegaNombre').value = b.nombre || '';
         document.getElementById('bodegaUbicacion').value = b.ubicacion || '';
         document.getElementById('bodegaCapacidad').value = b.capacidad || '';
+        // Cargar lista de usuarios y seleccionar el encargado actual si existe
+        try {
+            const usuarios = await apiCall('GET', '/usuarios');
+            const select = document.getElementById('bodegaEncargadoId');
+            select.innerHTML = '<option value="">Selecciona un encargado</option>';
+            usuarios.forEach(u => {
+                const option = document.createElement('option');
+                option.value = u.id;
+                option.textContent = u.username || (u.nombreCompleto || ('Usuario ' + u.id));
+                if (b.encargado && b.encargado.id === u.id) option.selected = true;
+                select.appendChild(option);
+            });
+        } catch (err) {
+            console.error('Error cargando usuarios para editar encargado:', err);
+        }
         document.querySelector('#modalBodega h2').textContent = 'Editar Bodega';
         openModal('modalBodega');
     } catch (err) { showError('❌ ' + err.message); }
@@ -582,10 +825,25 @@ async function editBodega(id) {
 async function editProducto(id) {
     try {
         const p = await apiCall('GET', `/productos/${id}`);
+        
+        // Cargar bodegas en el select
+        const bodegas = await apiCall('GET', '/bodegas');
+        const select = document.getElementById('productoBodegaId');
+        select.innerHTML = '<option value="">Selecciona una bodega</option>';
+        for (const bodega of bodegas) {
+            const option = document.createElement('option');
+            option.value = bodega.id;
+            option.textContent = bodega.nombre;
+            if (p.bodega?.id === bodega.id) {
+                option.selected = true;
+            }
+            select.appendChild(option);
+        }
+        
         document.getElementById('productoId').value = p.id || '';
         document.getElementById('productoNombre').value = p.nombre || '';
-        document.getElementById('productoSku').value = p.sku || '';
-        document.getElementById('productoCantidad').value = p.cantidad || '';
+        document.getElementById('productoCategoria').value = p.categoria || '';
+        document.getElementById('productoStock').value = p.stock || '';
         document.getElementById('productoPrecio').value = p.precio || '';
         document.querySelector('#modalProducto h2').textContent = 'Editar Producto';
         openModal('modalProducto');
@@ -605,32 +863,9 @@ async function editUsuario(id) {
     } catch (err) { showError('❌ ' + err.message); }
 }
 
-async function deleteBodega(id) { 
-    if (confirm('¿Estás seguro de que quieres eliminar esta bodega?')) {
-        try {
-            await apiCall('DELETE', `/bodegas/${id}`);
-            showSuccess('✅ Bodega eliminada exitosamente');
-            loadBodegas();
-        } catch (error) { showError('❌ Error eliminando bodega: ' + error.message); }
-    }
-}
-
-async function deleteProducto(id) { 
-    if (confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-        try {
-            await apiCall('DELETE', `/productos/${id}`);
-            showSuccess('✅ Producto eliminado exitosamente');
-            loadProductos();
-        } catch (error) { showError('❌ Error eliminando producto: ' + error.message); }
-    }
-}
-
-async function deleteUsuario(id) { 
-    if (confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
-        try {
-            await apiCall('DELETE', `/usuarios/${id}`);
-            showSuccess('✅ Usuario eliminado exitosamente');
-            loadUsuarios();
-        } catch (error) { showError('❌ Error eliminando usuario: ' + error.message); }
-    }
+async function editMovimiento(id) {
+    try {
+        const m = await apiCall('GET', `/movimientos/${id}`);
+        alert(`📋 Movimiento ID: ${m.id}\n\nTipo: ${m.tipo}\nFecha: ${new Date(m.fecha).toLocaleString('es-ES')}\nUsuario: ${m.usuario?.username || 'N/A'}\n\nBodega Origen: ${m.bodegaOrigen?.nombre || 'N/A'}\nBodega Destino: ${m.bodegaDestino?.nombre || 'N/A'}`);
+    } catch (err) { showError('❌ ' + err.message); }
 }
