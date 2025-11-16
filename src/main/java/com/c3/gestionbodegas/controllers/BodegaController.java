@@ -5,10 +5,20 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.c3.gestionbodegas.entities.Bodega;
 import com.c3.gestionbodegas.services.BodegaService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/bodegas")
@@ -35,7 +45,7 @@ public class BodegaController {
 
     // ✅ Crear una nueva bodega
     @PostMapping
-    public ResponseEntity<Bodega> crear(@RequestBody Bodega bodega) {
+    public ResponseEntity<Bodega> crear(@Valid @RequestBody Bodega bodega) {
         // Verificar si ya existe una bodega con ese nombre
         if (bodegaService.existePorNombre(bodega.getNombre())) {
             return ResponseEntity.badRequest().build();
@@ -46,21 +56,19 @@ public class BodegaController {
 
     // ✅ Actualizar una bodega existente
     @PutMapping("/{id}")
-    public ResponseEntity<Bodega> actualizar(@PathVariable Integer id, @RequestBody Bodega bodega) {
+    public ResponseEntity<Bodega> actualizar(@PathVariable Integer id, @Valid @RequestBody Bodega bodega) {
         Optional<Bodega> existente = bodegaService.buscarPorId(id);
         if (existente.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        // Actualiza los campos
-        Bodega bodegaActualizada = existente.get();
-        bodegaActualizada.setNombre(bodega.getNombre());
-        bodegaActualizada.setUbicacion(bodega.getUbicacion());
-        bodegaActualizada.setCapacidad(bodega.getCapacidad());
-        bodegaActualizada.setEncargado(bodega.getEncargado());
+        Bodega actual = existente.get();
+        actual.setNombre(bodega.getNombre());
+        actual.setUbicacion(bodega.getUbicacion());
+        actual.setCapacidad(bodega.getCapacidad());
+        actual.setEncargado(bodega.getEncargado());
 
-        Bodega actualizada = bodegaService.guardar(bodegaActualizada);
-        return ResponseEntity.ok(actualizada);
+        return ResponseEntity.ok(bodegaService.guardar(actual));
     }
 
     // ✅ Eliminar una bodega por ID

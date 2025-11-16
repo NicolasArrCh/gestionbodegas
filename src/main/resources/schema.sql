@@ -51,7 +51,6 @@ CREATE TABLE detalle_movimiento (
 
 CREATE TABLE auditoria (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    fecha DATETIME not null default current_timestamp,
     tipo_operacion ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL,
     fecha_hora DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     usuario_id INT NOT NULL,

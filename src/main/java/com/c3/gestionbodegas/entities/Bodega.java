@@ -18,29 +18,31 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "bodegas")
-@Data // Genera getters, setters, equals, hashCode y toString
-@NoArgsConstructor // Constructor vacio
-@AllArgsConstructor // Constructor con todos los campos
-@Builder // Permite crear objetos con patrón Builder
-
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Bodega {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @NotBlank(message = "El nombre no puede estar vacío")
+    @Size(max = 100, message = "El nombre no puede tener más de 100 caracteres")
     @Column(nullable = false, length = 100)
     private String nombre;
 
+    @NotBlank(message = "La ubicación no puede estar vacía")
+    @Size(max = 150, message = "La ubicación no puede tener más de 150 caracteres")
     @Column(nullable = false, length = 150)
     private String ubicacion;
 
+    @Min(value = 1, message = "La capacidad debe ser mayor a 0")
     @Column(nullable = false)
     private Integer capacidad;
 
     @ManyToOne
-@JoinColumn(name = "encargado_id", nullable = false)
-private Usuario encargado;
-    
+    @JoinColumn(name = "encargado_id", nullable = false)
+    private Usuario encargado;
 }
-
