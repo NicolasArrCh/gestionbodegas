@@ -498,7 +498,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Cargar lista de usuarios para seleccionar encargado
         (async () => {
             try {
-                const usuarios = await apiCall('GET', '/usuarios');
+                const usuarios = await apiCall('GET', '/usuarios/encargables');
                 const select = document.getElementById('bodegaEncargadoId');
                 select.innerHTML = '<option value="">Selecciona un encargado</option>';
                 usuarios.forEach(u => {
@@ -767,7 +767,7 @@ async function editBodega(id) {
         document.getElementById('bodegaCapacidad').value = b.capacidad || '';
         // Cargar lista de usuarios y seleccionar el encargado actual si existe
         try {
-            const usuarios = await apiCall('GET', '/usuarios');
+            const usuarios = await apiCall('GET', '/usuarios/encargables');
             const select = document.getElementById('bodegaEncargadoId');
             select.innerHTML = '<option value="">Selecciona un encargado</option>';
             usuarios.forEach(u => {
