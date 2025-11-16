@@ -1,5 +1,6 @@
 package com.c3.gestionbodegas.entities;
 
+import com.c3.gestionbodegas.model.Auditable;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Column;
@@ -22,7 +23,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DetalleMovimiento {
+public class DetalleMovimiento extends Auditable {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

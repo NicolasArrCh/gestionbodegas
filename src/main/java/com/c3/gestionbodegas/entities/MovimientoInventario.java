@@ -1,6 +1,10 @@
 package com.c3.gestionbodegas.entities;
 
 import java.time.LocalDateTime;
+
+import com.c3.gestionbodegas.model.Auditable;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -16,7 +20,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "movimientos_inventario")
@@ -24,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MovimientoInventario {
+public class MovimientoInventario extends Auditable {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -2,6 +2,8 @@ package com.c3.gestionbodegas.entities;
 
 import java.math.BigDecimal;
 
+import com.c3.gestionbodegas.model.Auditable;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -22,7 +24,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 
-public class Producto {
+public class Producto extends Auditable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

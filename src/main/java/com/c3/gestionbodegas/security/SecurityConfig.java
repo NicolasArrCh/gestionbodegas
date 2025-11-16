@@ -50,19 +50,12 @@ public class SecurityConfig {
             .cors(cors -> {}) // Habilitar CORS (usa la configuración de CorsConfig)
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                // endpoints públicos (para login y registro)
-                .requestMatchers("/api/auth/**").permitAll()
-                // HTML públicos (login y dashboard_admin)
-                .requestMatchers("/html/**").permitAll()
-                // Swagger y OpenAPI públicos
-                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                // Archivos estáticos (CSS, JS, etc) públicos
-                .requestMatchers("/css/**", "/js/**").permitAll()
-                // API requiere autenticación
-                .requestMatchers("/api/**").authenticated()
-                // cualquier otra ruta requiere token
-                .anyRequest().authenticated()
-            )
+            .requestMatchers("/api/**").permitAll()  // TODO público
+            .requestMatchers("/html/**").permitAll()
+            .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+            .requestMatchers("/css/**", "/js/**").permitAll()
+            .anyRequest().permitAll()  // Todo lo demás también público
+        )
             .httpBasic(basic -> basic.disable())
             .formLogin(form -> form.disable())
             .sessionManagement(session -> session.disable()) // JWT es stateless

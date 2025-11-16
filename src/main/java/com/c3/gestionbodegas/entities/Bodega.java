@@ -1,5 +1,7 @@
 package com.c3.gestionbodegas.entities;
 
+import com.c3.gestionbodegas.model.Auditable;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -22,7 +24,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Bodega {
+public class Bodega extends Auditable{
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
