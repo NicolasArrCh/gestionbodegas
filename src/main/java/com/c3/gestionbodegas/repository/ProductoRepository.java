@@ -20,8 +20,21 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer>{
     // Buscar productos con stock bajo (para reportes de alerta)
     List<Producto> findByStockLessThan(Integer cantidad);
 
+    // Buscar productos con stock mayor a X (útil para listar productos disponibles)
+    List<Producto> findByStockGreaterThan(Integer cantidad);
+
     // Verificar si ya existe un producto con ese nombre
     boolean existsByNombre(String nombre);
+
+    // Buscar producto por nombre en una bodega específica
+    Producto findByNombreAndBodega(String nombre, com.c3.gestionbodegas.entities.Bodega bodega);
+
+    // Obtener lista de productos por bodega
+    List<Producto> findByBodega(com.c3.gestionbodegas.entities.Bodega bodega);
+
+    // Calcular stock total de una bodega (suma de stock de todos sus productos)
+    @Query("SELECT COALESCE(SUM(p.stock), 0) FROM Producto p WHERE p.bodega.id = :bodegaId")
+    Integer obtenerStockTotalPorBodega(Integer bodegaId);
 
     // Consulta personalizada para los productos más movidos (puedes usarla en reportes)
     @Query("""

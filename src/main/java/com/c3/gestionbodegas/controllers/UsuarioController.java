@@ -96,4 +96,13 @@ public class UsuarioController {
         List<Usuario> usuarios = usuarioService.buscarPorRol(rol);
         return ResponseEntity.ok(usuarios);
     }
+
+    // ✅ Obtener solo usuarios que pueden ser encargados de bodega (ENCARGADO y OPERADOR, excluyendo ADMIN)
+    @GetMapping("/encargables")
+    public ResponseEntity<List<Usuario>> obtenerEncargables() {
+        List<Usuario> encargados = usuarioService.buscarPorRol(Usuario.Rol.ENCARGADO);
+        List<Usuario> operadores = usuarioService.buscarPorRol(Usuario.Rol.OPERADOR);
+        encargados.addAll(operadores);
+        return ResponseEntity.ok(encargados);
+    }
 }

@@ -47,9 +47,13 @@ public class DetalleMovimientoController {
 
     // Crear un detalle
     @PostMapping
-    public ResponseEntity<DetalleMovimiento> crear(@RequestBody DetalleMovimiento detalleMovimiento) {
-        DetalleMovimiento nuevo = detalleMovimientoService.guardar(detalleMovimiento);
-        return ResponseEntity.ok(nuevo);
+    public ResponseEntity<?> crear(@RequestBody DetalleMovimiento detalleMovimiento) {
+        try {
+            DetalleMovimiento nuevo = detalleMovimientoService.guardar(detalleMovimiento);
+            return ResponseEntity.ok(nuevo);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
     }
 
     // Actualizar un detalle existente

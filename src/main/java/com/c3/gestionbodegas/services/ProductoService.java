@@ -15,9 +15,9 @@ public class ProductoService {
     @Autowired
     private ProductoRepository productoRepository;
 
-    // Obtener todos los productos
+    // Obtener todos los productos (solo los disponibles con stock > 0)
     public List<Producto> obtenerTodos() {
-        return productoRepository.findAll();
+        return productoRepository.findByStockGreaterThan(0);
     }
 
     // Buscar un producto por su ID
