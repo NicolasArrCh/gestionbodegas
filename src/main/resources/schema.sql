@@ -60,6 +60,27 @@ CREATE TABLE auditoria (
     FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
 );
 
+-- ✅ NUEVA TABLA: Intentos Fallidos
+CREATE TABLE intentos_fallidos (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    fecha_hora DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    tipo_movimiento ENUM('SALIDA', 'ENTRADA', 'TRANSFERENCIA') NOT NULL,
+    razon_error VARCHAR(500) NOT NULL,
+    usuario_id INT NOT NULL,
+    producto_id INT NOT NULL,
+    bodega_origen_id INT NULL,
+    bodega_destino_id INT NULL,
+    cantidad_intentada INT NOT NULL,
+    detalles_adicionales JSON NULL,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    FOREIGN KEY (producto_id) REFERENCES productos(id),
+    FOREIGN KEY (bodega_origen_id) REFERENCES bodegas(id),
+    FOREIGN KEY (bodega_destino_id) REFERENCES bodegas(id),
+    INDEX idx_fecha (fecha_hora),
+    INDEX idx_usuario (usuario_id),
+    INDEX idx_tipo (tipo_movimiento)
+);
+
 -- Tabla usuarios
 ALTER TABLE usuarios 
 ADD COLUMN fecha_creacion DATETIME,

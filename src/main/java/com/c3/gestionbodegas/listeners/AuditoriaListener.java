@@ -40,6 +40,7 @@ public class AuditoriaListener {
     @PostPersist
     public void postPersist(Object entity) {
         if (entity instanceof Auditoria) return;
+        if (entity instanceof com.c3.gestionbodegas.entities.DetalleMovimiento) return;  // ← Excluir DetalleMovimiento
         
         try {
             String valorNuevo = objectMapper.writeValueAsString(entity);
@@ -71,6 +72,7 @@ public class AuditoriaListener {
     @PostUpdate
     public void postUpdate(Object entity) {
         if (entity instanceof Auditoria) return;
+        if (entity instanceof com.c3.gestionbodegas.entities.DetalleMovimiento) return;  // ← Excluir DetalleMovimiento
         
         try {
             String valorNuevo = objectMapper.writeValueAsString(entity);
@@ -81,7 +83,7 @@ public class AuditoriaListener {
                 return;
             }
             
-            String anterior = valorAnterior.get();
+            String anterior = valorAnterior.get() != null ? valorAnterior.get() : "{}";
             
             auditoriaAsyncService.guardarAuditoriaAsync(
                 Auditoria.TipoOperacion.UPDATE, usuario,
@@ -91,6 +93,7 @@ public class AuditoriaListener {
             valorAnterior.remove();
         } catch (Exception e) {
             System.err.println("❌ Error al auditar UPDATE: " + e.getMessage());
+            e.printStackTrace();
             valorAnterior.remove();
         }
     }
@@ -110,6 +113,7 @@ public class AuditoriaListener {
     @PostRemove
     public void postRemove(Object entity) {
         if (entity instanceof Auditoria) return;
+        if (entity instanceof com.c3.gestionbodegas.entities.DetalleMovimiento) return;  // ← Excluir DetalleMovimiento
         
         try {
             Usuario usuario = obtenerUsuarioActual();
@@ -119,7 +123,7 @@ public class AuditoriaListener {
                 return;
             }
             
-            String anterior = valorAnterior.get();
+            String anterior = valorAnterior.get() != null ? valorAnterior.get() : "{}";
             
             auditoriaAsyncService.guardarAuditoriaAsync(
                 Auditoria.TipoOperacion.DELETE, usuario,
@@ -129,6 +133,7 @@ public class AuditoriaListener {
             valorAnterior.remove();
         } catch (Exception e) {
             System.err.println("❌ Error al auditar DELETE: " + e.getMessage());
+            e.printStackTrace();
             valorAnterior.remove();
         }
     }

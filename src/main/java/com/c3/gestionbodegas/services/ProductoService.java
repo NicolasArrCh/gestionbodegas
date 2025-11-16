@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.c3.gestionbodegas.entities.Producto;
 import com.c3.gestionbodegas.repository.ProductoRepository;
@@ -68,6 +69,7 @@ public class ProductoService {
     return productoRepository.findById(id).orElse(null);
 }
 
+    @Transactional
     public Producto actualizar(Integer id, Producto producto) {
     return productoRepository.findById(id).map(p -> {
         p.setNombre(producto.getNombre());
