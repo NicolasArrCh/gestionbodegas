@@ -550,13 +550,6 @@ Este proyecto está bajo la Licencia Apache 2.0. Ver archivo `LICENSE` para más
 
 ---
 
-## 👥 Autores
-
-- **Equipo de Desarrollo C3**
-- Email: soporte@c3.com
-
----
-
 ## 🐛 Reporte de Bugs
 
 Para reportar bugs o solicitar features, crear un issue en GitHub.
