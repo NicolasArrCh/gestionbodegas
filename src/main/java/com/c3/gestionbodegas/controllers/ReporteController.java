@@ -1,5 +1,6 @@
 package com.c3.gestionbodegas.controllers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,29 +38,41 @@ public class ReporteController {
     public ResponseEntity<Map<String, Object>> obtenerResumenGeneral() {
         Map<String, Object> reporte = new HashMap<>();
 
-        // 📊 Stock total por bodega
-        List<Object[]> stockPorBodega = bodegaService.obtenerResumenStockPorBodega();
-        reporte.put("stockPorBodega", stockPorBodega);
+        try {
+            // 📊 Stock total por bodega
+            List<Object[]> stockPorBodega = bodegaService.obtenerResumenStockPorBodega();
+            reporte.put("stockPorBodega", stockPorBodega != null ? stockPorBodega : new ArrayList<>());
 
-        // 📦 Productos más movidos
-        List<Object[]> productosMasMovidos = productoService.obtenerProductosMasMovidos();
-        reporte.put("productosMasMovidos", productosMasMovidos);
+            // 📦 Productos más movidos
+            List<Object[]> productosMasMovidos = productoService.obtenerProductosMasMovidos();
+            reporte.put("productosMasMovidos", productosMasMovidos != null ? productosMasMovidos : new ArrayList<>());
 
-        // 🔻 Productos con stock bajo (< 10)
-        List<Object[]> productosStockBajo = productoService.buscarPorStockBajo(10)
-                .stream()
-                .map(p -> new Object[]{p.getId(), p.getNombre(), p.getStock()})
-                .toList();
-        reporte.put("productosStockBajo", productosStockBajo);
+            // 🔻 Productos con stock bajo (< 10)
+            List<Object[]> productosStockBajo = productoService.buscarPorStockBajo(10)
+                    .stream()
+                    .map(p -> new Object[]{p.getId(), p.getNombre(), p.getStock()})
+                    .toList();
+            reporte.put("productosStockBajo", productosStockBajo);
 
-        // 📈 Total de bodegas
-        reporte.put("totalBodegas", bodegaService.obtenerTodas().size());
+            // 📈 Total de bodegas
+            reporte.put("totalBodegas", bodegaService.obtenerTodas().size());
 
-        // 📦 Total de productos
-        reporte.put("totalProductos", productoService.obtenerTodos().size());
+            // 📦 Total de productos
+            reporte.put("totalProductos", productoService.obtenerTodos().size());
 
-        // ↔️ Total de movimientos
-        reporte.put("totalMovimientos", movimientoService.obtenerTodos().size());
+            // ↔️ Total de movimientos
+            reporte.put("totalMovimientos", movimientoService.obtenerTodos().size());
+
+        } catch (Exception e) {
+            System.err.println("❌ Error generando reporte: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Retornar reporte con valores por defecto en caso de error
+            reporte.put("error", "No se pudieron cargar algunos datos del reporte");
+            reporte.put("totalBodegas", 0);
+            reporte.put("totalProductos", 0);
+            reporte.put("totalMovimientos", 0);
+        }
 
         return ResponseEntity.ok(reporte);
     }

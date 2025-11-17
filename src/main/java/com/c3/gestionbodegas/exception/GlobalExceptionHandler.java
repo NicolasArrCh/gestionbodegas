@@ -92,6 +92,23 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Maneja excepción de capacidad excedida en bodega
+     */
+    @ExceptionHandler(CapacidadExcedidaException.class)
+    public ResponseEntity<Map<String, Object>> handleCapacidadExcedida(
+            CapacidadExcedidaException ex, WebRequest request) {
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.BAD_REQUEST.value());
+        response.put("error", "Capacidad Excedida");
+        response.put("message", ex.getMessage());
+        response.put("path", request.getDescription(false).replace("uri=", ""));
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    /**
      * Maneja cualquier otra excepción no capturada
      */
     @ExceptionHandler(Exception.class)
