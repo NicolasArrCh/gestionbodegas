@@ -1,9 +1,11 @@
 package com.c3.gestionbodegas.entities;
 
+import com.c3.gestionbodegas.listeners.AuditoriaListener;
 import com.c3.gestionbodegas.model.Auditable;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -20,12 +22,12 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "bodegas")
-// @EntityListeners(AuditoriaListener.class) ← REMOVIDO: usar solo Auditable para evitar conflicto dual de listeners
+@EntityListeners(AuditoriaListener.class) // ✅ ACTIVAR AUDITORÍA
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Bodega extends Auditable{
+public class Bodega extends Auditable {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

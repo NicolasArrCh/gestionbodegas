@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -13,8 +14,13 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
+import com.c3.gestionbodegas.services.AuditoriaErrorService;
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    @Autowired(required = false)
+    private AuditoriaErrorService auditoriaErrorService;
 
     /**
      * Maneja errores de validación (@Valid)
@@ -37,6 +43,9 @@ public class GlobalExceptionHandler {
         response.put("errors", errors);
         response.put("path", request.getDescription(false).replace("uri=", ""));
 
+        // NO registrar en auditoría normal, esto es un error de validación
+        System.out.println("⚠️ Error de validación: " + errors);
+
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
@@ -53,6 +62,9 @@ public class GlobalExceptionHandler {
         response.put("error", "Unauthorized");
         response.put("message", "Usuario o contraseña inválidos");
         response.put("path", request.getDescription(false).replace("uri=", ""));
+
+        // NO auditar intentos de login fallidos en la tabla de auditoría
+        System.out.println("⚠️ Intento de login fallido");
 
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
@@ -71,6 +83,10 @@ public class GlobalExceptionHandler {
         response.put("message", ex.getMessage());
         response.put("path", request.getDescription(false).replace("uri=", ""));
 
+        // Los errores de negocio ya se registran en intentos_fallidos
+        // desde DetalleMovimientoService, no duplicar aquí
+        System.out.println("⚠️ Error de lógica de negocio: " + ex.getMessage());
+
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
@@ -87,6 +103,8 @@ public class GlobalExceptionHandler {
         response.put("error", "Not Found");
         response.put("message", ex.getMessage());
         response.put("path", request.getDescription(false).replace("uri=", ""));
+
+        System.out.println("⚠️ Recurso no encontrado: " + ex.getMessage());
 
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
@@ -105,6 +123,18 @@ public class GlobalExceptionHandler {
         response.put("message", ex.getMessage());
         response.put("path", request.getDescription(false).replace("uri=", ""));
 
+        // Registrar en intentos fallidos si el servicio está disponible
+        if (auditoriaErrorService != null) {
+            auditoriaErrorService.registrarError(
+                "OPERACION_BODEGA",
+                "Bodega",
+                ex.getMessage(),
+                null
+            );
+        }
+
+        System.out.println("⚠️ Capacidad excedida: " + ex.getMessage());
+
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
@@ -122,6 +152,9 @@ public class GlobalExceptionHandler {
         response.put("message", "Ha ocurrido un error inesperado");
         response.put("details", ex.getMessage());
         response.put("path", request.getDescription(false).replace("uri=", ""));
+
+        System.err.println("❌ Error inesperado: " + ex.getMessage());
+        ex.printStackTrace();
 
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }

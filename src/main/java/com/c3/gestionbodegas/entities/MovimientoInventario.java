@@ -25,7 +25,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "movimientos_inventario")
-@EntityListeners(AuditoriaListener.class)
+@EntityListeners(AuditoriaListener.class) // ✅ ASEGURAR QUE ESTÁ ACTIVADO
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -57,7 +57,7 @@ public class MovimientoInventario extends Auditable {
     @JoinColumn(name = "bodega_destino_id", nullable = true)
     private Bodega bodegaDestino;
 
-    // Alias para JSON: permite recibir tanto "usuario_id" como "usuarioId"
+    // Alias para JSON
     @JsonProperty("usuario_id")
     private void setUsuarioId(Integer usuarioId) {
         if (usuarioId != null) {

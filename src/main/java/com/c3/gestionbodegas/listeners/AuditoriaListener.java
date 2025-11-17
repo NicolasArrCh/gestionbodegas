@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.c3.gestionbodegas.entities.Auditoria;
 import com.c3.gestionbodegas.entities.Usuario;
@@ -27,6 +29,7 @@ public class AuditoriaListener {
     private static ObjectMapper objectMapper;
     
     private ThreadLocal<String> valorAnterior = new ThreadLocal<>();
+    private ThreadLocal<Boolean> operacionFallida = new ThreadLocal<>();
 
     @Autowired
     public void init(@Lazy AuditoriaAsyncService auditoriaAsyncService,
@@ -39,21 +42,22 @@ public class AuditoriaListener {
 
     @PostPersist
     public void postPersist(Object entity) {
+        // No auditar entidades de Auditoria ni DetalleMovimiento
         if (entity instanceof Auditoria) return;
-        if (entity instanceof com.c3.gestionbodegas.entities.DetalleMovimiento) return;  // ← Excluir DetalleMovimiento
+        if (entity instanceof com.c3.gestionbodegas.entities.DetalleMovimiento) return;
         
-        try {
-            String valorNuevo = objectMapper.writeValueAsString(entity);
-            Usuario usuario = obtenerUsuarioActual();
-            
-            if (usuario == null) return;
-            
-            auditoriaAsyncService.guardarAuditoriaAsync(
-                Auditoria.TipoOperacion.INSERT, usuario,
-                entity.getClass().getSimpleName(), null, valorNuevo
+        // Solo auditar si la transacción fue exitosa
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronizationAdapter() {
+                    @Override
+                    public void afterCommit() {
+                        registrarAuditoria(Auditoria.TipoOperacion.INSERT, entity, null);
+                    }
+                }
             );
-        } catch (Exception e) {
-            System.err.println("❌ Error al auditar INSERT: " + e.getMessage());
+        } else {
+            registrarAuditoria(Auditoria.TipoOperacion.INSERT, entity, null);
         }
     }
 
@@ -72,28 +76,28 @@ public class AuditoriaListener {
     @PostUpdate
     public void postUpdate(Object entity) {
         if (entity instanceof Auditoria) return;
-        if (entity instanceof com.c3.gestionbodegas.entities.DetalleMovimiento) return;  // ← Excluir DetalleMovimiento
+        if (entity instanceof com.c3.gestionbodegas.entities.DetalleMovimiento) return;
         
-        try {
-            String valorNuevo = objectMapper.writeValueAsString(entity);
-            Usuario usuario = obtenerUsuarioActual();
+        // Solo auditar si la transacción fue exitosa
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            final String anterior = valorAnterior.get() != null ? valorAnterior.get() : "{}";
             
-            if (usuario == null) {
-                valorAnterior.remove();
-                return;
-            }
-            
-            String anterior = valorAnterior.get() != null ? valorAnterior.get() : "{}";
-            
-            auditoriaAsyncService.guardarAuditoriaAsync(
-                Auditoria.TipoOperacion.UPDATE, usuario,
-                entity.getClass().getSimpleName(), anterior, valorNuevo
+            TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronizationAdapter() {
+                    @Override
+                    public void afterCommit() {
+                        registrarAuditoria(Auditoria.TipoOperacion.UPDATE, entity, anterior);
+                        valorAnterior.remove();
+                    }
+                    
+                    @Override
+                    public void afterCompletion(int status) {
+                        valorAnterior.remove();
+                    }
+                }
             );
-            
-            valorAnterior.remove();
-        } catch (Exception e) {
-            System.err.println("❌ Error al auditar UPDATE: " + e.getMessage());
-            e.printStackTrace();
+        } else {
+            registrarAuditoria(Auditoria.TipoOperacion.UPDATE, entity, valorAnterior.get());
             valorAnterior.remove();
         }
     }
@@ -113,31 +117,68 @@ public class AuditoriaListener {
     @PostRemove
     public void postRemove(Object entity) {
         if (entity instanceof Auditoria) return;
-        if (entity instanceof com.c3.gestionbodegas.entities.DetalleMovimiento) return;  // ← Excluir DetalleMovimiento
+        if (entity instanceof com.c3.gestionbodegas.entities.DetalleMovimiento) return;
         
-        try {
-            Usuario usuario = obtenerUsuarioActual();
+        // Solo auditar si la transacción fue exitosa
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            final String anterior = valorAnterior.get() != null ? valorAnterior.get() : "{}";
             
-            if (usuario == null) {
-                valorAnterior.remove();
-                return;
-            }
-            
-            String anterior = valorAnterior.get() != null ? valorAnterior.get() : "{}";
-            
-            auditoriaAsyncService.guardarAuditoriaAsync(
-                Auditoria.TipoOperacion.DELETE, usuario,
-                entity.getClass().getSimpleName(), anterior, null
+            TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronizationAdapter() {
+                    @Override
+                    public void afterCommit() {
+                        registrarAuditoria(Auditoria.TipoOperacion.DELETE, entity, anterior);
+                        valorAnterior.remove();
+                    }
+                    
+                    @Override
+                    public void afterCompletion(int status) {
+                        valorAnterior.remove();
+                    }
+                }
             );
-            
-            valorAnterior.remove();
-        } catch (Exception e) {
-            System.err.println("❌ Error al auditar DELETE: " + e.getMessage());
-            e.printStackTrace();
+        } else {
+            registrarAuditoria(Auditoria.TipoOperacion.DELETE, entity, valorAnterior.get());
             valorAnterior.remove();
         }
     }
 
+    /**
+     * Método centralizado para registrar auditoría
+     */
+    private void registrarAuditoria(Auditoria.TipoOperacion tipo, Object entity, String valorAnt) {
+        try {
+            String valorNuevo = null;
+            if (tipo != Auditoria.TipoOperacion.DELETE) {
+                valorNuevo = objectMapper.writeValueAsString(entity);
+            }
+            
+            Usuario usuario = obtenerUsuarioActual();
+            
+            if (usuario == null) {
+                System.err.println("⚠️ No se pudo obtener usuario para auditoría");
+                return;
+            }
+            
+            auditoriaAsyncService.guardarAuditoriaAsync(
+                tipo, 
+                usuario,
+                entity.getClass().getSimpleName(), 
+                valorAnt, 
+                valorNuevo
+            );
+            
+            System.out.println("✅ Auditoría " + tipo + " registrada para: " + entity.getClass().getSimpleName());
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error al registrar auditoría: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Obtiene el usuario autenticado actual
+     */
     private Usuario obtenerUsuarioActual() {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -146,15 +187,19 @@ public class AuditoriaListener {
                 && !"anonymousUser".equals(authentication.getPrincipal())) {
                 
                 String username = authentication.getName();
-                return usuarioRepository.findByUsername(username).orElseGet(() -> obtenerUsuarioSistema());
+                return usuarioRepository.findByUsername(username)
+                        .orElseGet(this::obtenerUsuarioSistema);
             }
         } catch (Exception e) {
-            System.err.println("Error al obtener usuario actual: " + e.getMessage());
+            System.err.println("⚠️ Error al obtener usuario actual: " + e.getMessage());
         }
         
         return obtenerUsuarioSistema();
     }
     
+    /**
+     * Usuario por defecto cuando no hay autenticación
+     */
     private Usuario obtenerUsuarioSistema() {
         try {
             return usuarioRepository.findById(1).orElseGet(() -> {
