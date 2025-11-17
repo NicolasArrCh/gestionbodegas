@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Operador - Gestión de Bodegas</title>
+    <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <h2>📦 Gestión de Bodegas - Operador</h2>
+            </div>
+            <div class="navbar-menu">
+                <span id="usuarioNombre" class="usuario-nombre"></span>
+                <button id="logoutBtn" class="btn-logout">Cerrar Sesión</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <ul class="menu">
+                <li><a href="#" class="menu-link active" data-section="inicio">🏠 Inicio</a></li>
+                <li><a href="#" class="menu-link" data-section="productos">📦 Consultar Productos</a></li>
+                <li><a href="#" class="menu-link" data-section="movimientos">↔️ Mis Movimientos</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Sección Inicio -->
+            <section id="inicio" class="content-section active">
+                <div class="section-header">
+                    <div>
+                        <h1>Bienvenido, Operador</h1>
+                        <p>Panel de consulta de inventario</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-icon">📦</div>
+                        <div class="card-content">
+                            <h3>Total Productos</h3>
+                            <p id="totalProductos" class="card-number">0</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">🏢</div>
+                        <div class="card-content">
+                            <h3>Total Bodegas</h3>
+                            <p id="totalBodegas" class="card-number">0</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">↔️</div>
+                        <div class="card-content">
+                            <h3>Mis Movimientos</h3>
+                            <p id="misMovimientos" class="card-number">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: white; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                    <h3 style="margin-bottom: 15px;">ℹ️ Información</h3>
+                    <p style="color: #666; line-height: 1.6;">
+                        Como operador, puedes consultar el inventario de productos y ver el historial de tus movimientos.
+                        Para realizar acciones de gestión, contacta a un encargado o administrador.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Sección Productos (Solo lectura) -->
+            <section id="productos" class="content-section">
+                <div class="section-header">
+                    <h1>Consultar Productos</h1>
+                </div>
+                
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Categoría</th>
+                                <th>Stock</th>
+                                <th>Precio</th>
+                                <th>Bodega</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productosTableBody">
+                            <tr><td colspan="6" class="text-center">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Sección Mis Movimientos -->
+            <section id="movimientos" class="content-section">
+                <div class="section-header">
+                    <h1>Mis Movimientos</h1>
+                </div>
+                
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tipo</th>
+                                <th>Bodegas</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody id="movimientosTableBody">
+                            <tr><td colspan="4" class="text-center">Cargando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="errorMessage" class="error-message"></div>
+    <script src="../js/dashboard_operador.js"></script>
+</body>
+</html>

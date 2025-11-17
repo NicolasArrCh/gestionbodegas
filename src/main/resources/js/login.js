@@ -27,6 +27,25 @@ function decodeTokenRol(token) {
 }
 
 /**
+ * Redirige al dashboard según el rol
+ */
+function redirectByRole(rol) {
+    switch(rol) {
+        case 'ADMIN':
+            window.location.href = '/html/dashboard_admin.html';
+            break;
+        case 'ENCARGADO':
+            window.location.href = '/html/dashboard_encargado.html';
+            break;
+        case 'OPERADOR':
+            window.location.href = '/html/dashboard_operador.html';
+            break;
+        default:
+            window.location.href = '/html/login.html';
+    }
+}
+
+/**
  * Maneja el envío del formulario de login
  */
 async function handleLogin(e) {
@@ -75,13 +94,13 @@ async function handleLogin(e) {
             const rol = decodeTokenRol(data.token);
             if (rol) {
                 localStorage.setItem('rol', rol);
+                console.log('✅ Rol del usuario:', rol);
             }
 
-            // Redirigir después de 1.5 segundos
+            // Redirigir después de 1 segundo según el rol
             setTimeout(() => {
-                // Redirigir al dashboard admin
-                window.location.href = '/html/dashboard_admin.html';
-            }, 1500);
+                redirectByRole(rol);
+            }, 1000);
         } else {
             // Error en login
             showError(data.message || 'Usuario o contraseña inválidos');
@@ -142,16 +161,15 @@ function isAuthenticated() {
 function logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
+    localStorage.removeItem('rol');
     window.location.href = '/html/login.html';
 }
 
 // Verificar si el usuario está autenticado
 document.addEventListener('DOMContentLoaded', () => {
-    // Si ya está autenticado, redirigir al dashboard
-    // Descomentar si quieres que se redirija automáticamente
-    /*
+    // Si ya está autenticado, redirigir al dashboard correspondiente
     if (isAuthenticated()) {
-        window.location.href = '/html/dashboard.html';
+        const rol = localStorage.getItem('rol');
+        redirectByRole(rol);
     }
-    */
 });
