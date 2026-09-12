@@ -1,6 +1,5 @@
 package com.c3.gestionbodegas.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -13,21 +12,20 @@ import com.c3.gestionbodegas.dto.LoginResponse;
 import com.c3.gestionbodegas.dto.RegisterRequest;
 import com.c3.gestionbodegas.entities.Usuario;
 import com.c3.gestionbodegas.services.UsuarioService;
-import com.c3.gestionbodegas.security.JwtUtil;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class AuthController {
 
-    @Autowired
-    private AuthenticationManager authManager;
-
-    @Autowired
-    private UsuarioService usuarioService;
-
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final AuthenticationManager authManager;
+    private final UsuarioService usuarioService;
+    private final JwtUtil jwtUtil;
 
     // ✅ LOGIN
     @PostMapping("/login")
@@ -40,8 +38,10 @@ public class AuthController {
             Usuario usuario = usuarioService.buscarPorUsername(request.getUsername()).orElseThrow();
             String token = jwtUtil.generarToken(usuario);
 
+            log.info("Login exitoso para usuario: {}", request.getUsername());
             return ResponseEntity.ok(new LoginResponse(token));
         } catch (AuthenticationException e) {
+            log.warn("Fallo de autenticación para usuario: {}", request.getUsername());
             throw new BadCredentialsException("Usuario o contraseña inválidos");
         }
     }
@@ -60,8 +60,9 @@ public class AuthController {
                 .rol(request.getRol() != null ? request.getRol() : Usuario.Rol.OPERADOR)
                 .build();
 
-        usuarioService.guardar(nuevo);
+        usuarioService.crear(nuevo);
 
+        log.info("Usuario registrado con éxito: {}", request.getUsername());
         return ResponseEntity.ok("Usuario registrado con éxito");
     }
 }

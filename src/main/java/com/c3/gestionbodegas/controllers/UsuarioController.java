@@ -3,7 +3,10 @@ package com.c3.gestionbodegas.controllers;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,24 +16,39 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.c3.gestionbodegas.entities.Usuario;
 import com.c3.gestionbodegas.services.UsuarioService;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/usuarios")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class UsuarioController {
 
-    @Autowired
-    private UsuarioService usuarioService;
+    private final UsuarioService usuarioService;
 
-    // ✅ Obtener todos los usuarios
+    // ✅ Obtener todos los usuarios (lista completa para frontend existente)
     @GetMapping
     public ResponseEntity<List<Usuario>> obtenerTodos() {
         List<Usuario> usuarios = usuarioService.obtenerTodos();
         return ResponseEntity.ok(usuarios);
+    }
+
+    // ✅ Obtener usuarios paginados
+    @GetMapping("/paginado")
+    public ResponseEntity<Page<Usuario>> obtenerTodosPaginado(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortBy) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
+        return ResponseEntity.ok(usuarioService.obtenerTodosPaginado(pageable));
     }
 
     // ✅ Obtener usuario por ID
@@ -44,11 +62,10 @@ public class UsuarioController {
     // ✅ Crear nuevo usuario
     @PostMapping
     public ResponseEntity<Usuario> crear(@RequestBody Usuario usuario) {
-        // Aquí podrías validar si el username ya existe antes de guardar
         if (usuarioService.existePorUsername(usuario.getUsername())) {
             return ResponseEntity.badRequest().build();
         }
-        Usuario nuevo = usuarioService.guardar(usuario);
+        Usuario nuevo = usuarioService.crear(usuario);
         return ResponseEntity.ok(nuevo);
     }
 
@@ -59,8 +76,7 @@ public class UsuarioController {
         if (existente.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        usuario.setId(id);
-        Usuario actualizado = usuarioService.guardar(usuario);
+        Usuario actualizado = usuarioService.actualizar(id, usuario);
         return ResponseEntity.ok(actualizado);
     }
 

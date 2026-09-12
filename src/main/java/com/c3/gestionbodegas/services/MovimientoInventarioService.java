@@ -4,7 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.c3.gestionbodegas.entities.Bodega;
@@ -13,15 +14,24 @@ import com.c3.gestionbodegas.entities.MovimientoInventario.TipoMovimiento;
 import com.c3.gestionbodegas.entities.Usuario;
 import com.c3.gestionbodegas.repository.MovimientoInventarioRepository;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class MovimientoInventarioService {
 
-    @Autowired
-    private MovimientoInventarioRepository movimientoInventarioRepository;
+    private final MovimientoInventarioRepository movimientoInventarioRepository;
 
     // Obtener todos los movimientos
     public List<MovimientoInventario> obtenerTodos() {
         return movimientoInventarioRepository.findAll();
+    }
+
+    // Obtener todos los movimientos paginados
+    public Page<MovimientoInventario> obtenerTodosPaginado(Pageable pageable) {
+        return movimientoInventarioRepository.findAll(pageable);
     }
 
     // Buscar un movimiento por ID
@@ -31,11 +41,13 @@ public class MovimientoInventarioService {
 
     // Guardar o actualizar un movimiento
     public MovimientoInventario guardar(MovimientoInventario movimiento) {
+        log.info("Guardando movimiento de tipo: {}", movimiento.getTipo());
         return movimientoInventarioRepository.save(movimiento);
     }
 
     // Eliminar un movimiento por su ID
     public void eliminar(Integer id) {
+        log.info("Eliminando movimiento con ID: {}", id);
         movimientoInventarioRepository.deleteById(id);
     }
 
@@ -51,8 +63,6 @@ public class MovimientoInventarioService {
 
     // Buscar movimientos entre un rango de fechas
     public List<MovimientoInventario> buscarPorRangoDeFechas(LocalDateTime fechaInicio, LocalDateTime fechaFin) {
-        // ⚠️ Si el método del repository es findByFecha(...) y no findByFechaBetween(...),
-        // deberías cambiar el nombre del método en el repository a findByFechaBetween para que funcione correctamente.
         return movimientoInventarioRepository.findByFechaBetween(fechaInicio, fechaFin);
     }
 
@@ -61,7 +71,7 @@ public class MovimientoInventarioService {
         return movimientoInventarioRepository.findByBodegaOrigenOrBodegaDestino(bodegaOrigen, bodegaDestino);
     }
 
-    // Obtener reporte de los productos más movidos
+    // Obtener productos más movidos
     public List<Object[]> obtenerProductosMasMovidos() {
         return movimientoInventarioRepository.obtenerProductosMasMovidos();
     }

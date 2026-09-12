@@ -3,7 +3,8 @@ package com.c3.gestionbodegas.services;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.c3.gestionbodegas.entities.Bodega;
@@ -11,13 +12,16 @@ import com.c3.gestionbodegas.entities.IntentoFallido;
 import com.c3.gestionbodegas.entities.Producto;
 import com.c3.gestionbodegas.entities.Usuario;
 import com.c3.gestionbodegas.repository.IntentoFallidoRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class IntentoFallidoService {
 
-    @Autowired
-    private IntentoFallidoRepository intentoFallidoRepository;
+    private final IntentoFallidoRepository intentoFallidoRepository;
 
     /**
      * Registrar un intento fallido de movimiento
@@ -43,6 +47,7 @@ public class IntentoFallidoService {
                 .detallesAdicionales(detallesAdicionales)
                 .build();
 
+        log.warn("Registrando intento fallido de tipo {}: {}", tipoMovimiento, razonError);
         return intentoFallidoRepository.save(intento);
     }
 
@@ -51,6 +56,13 @@ public class IntentoFallidoService {
      */
     public List<IntentoFallido> obtenerTodos() {
         return intentoFallidoRepository.findAll();
+    }
+
+    /**
+     * Obtener todos los intentos fallidos paginados
+     */
+    public Page<IntentoFallido> obtenerTodosPaginado(Pageable pageable) {
+        return intentoFallidoRepository.findAll(pageable);
     }
 
     /**

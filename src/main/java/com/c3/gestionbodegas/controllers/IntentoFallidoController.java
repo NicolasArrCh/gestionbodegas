@@ -3,7 +3,10 @@ package com.c3.gestionbodegas.controllers;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -17,13 +20,17 @@ import org.springframework.web.bind.annotation.RestController;
 import com.c3.gestionbodegas.entities.IntentoFallido;
 import com.c3.gestionbodegas.services.IntentoFallidoService;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/intentos-fallidos")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class IntentoFallidoController {
 
-    @Autowired
-    private IntentoFallidoService intentoFallidoService;
+    private final IntentoFallidoService intentoFallidoService;
 
     /**
      * Obtener todos los intentos fallidos
@@ -31,6 +38,20 @@ public class IntentoFallidoController {
     @GetMapping
     public ResponseEntity<List<IntentoFallido>> obtenerTodos() {
         return ResponseEntity.ok(intentoFallidoService.obtenerTodos());
+    }
+
+    /**
+     * Obtener todos los intentos fallidos paginados
+     */
+    @GetMapping("/paginado")
+    public ResponseEntity<Page<IntentoFallido>> obtenerTodosPaginado(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "fechaHora") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+        Sort sort = "asc".equalsIgnoreCase(direction) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return ResponseEntity.ok(intentoFallidoService.obtenerTodosPaginado(pageable));
     }
 
     /**
@@ -55,7 +76,6 @@ public class IntentoFallidoController {
 
     /**
      * Obtener intentos fallidos por tipo de movimiento
-     * /api/intentos-fallidos/por-tipo?tipo=SALIDA
      */
     @GetMapping("/por-tipo")
     public ResponseEntity<List<IntentoFallido>> obtenerPorTipo(
@@ -65,7 +85,6 @@ public class IntentoFallidoController {
 
     /**
      * Buscar intentos fallidos por razón de error
-     * /api/intentos-fallidos/buscar?error=stock
      */
     @GetMapping("/buscar")
     public ResponseEntity<List<IntentoFallido>> buscarPorError(
@@ -75,7 +94,6 @@ public class IntentoFallidoController {
 
     /**
      * Obtener intentos fallidos en rango de fechas
-     * /api/intentos-fallidos/por-fecha?inicio=2025-01-01T00:00:00&fin=2025-12-31T23:59:59
      */
     @GetMapping("/por-fecha")
     public ResponseEntity<List<IntentoFallido>> obtenerPorFechas(

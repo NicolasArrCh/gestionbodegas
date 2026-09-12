@@ -4,29 +4,67 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import com.c3.gestionbodegas.dto.movimiento.MovimientoRequestDTO;
+import com.c3.gestionbodegas.dto.movimiento.MovimientoResponseDTO;
 import com.c3.gestionbodegas.entities.Bodega;
 import com.c3.gestionbodegas.entities.MovimientoInventario;
 import com.c3.gestionbodegas.entities.MovimientoInventario.TipoMovimiento;
 import com.c3.gestionbodegas.entities.Usuario;
 import com.c3.gestionbodegas.services.MovimientoInventarioService;
+import com.c3.gestionbodegas.services.MovimientoOrquestadorService;
+import com.c3.gestionbodegas.services.SecurityContextService;
 
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/movimientos")
 @CrossOrigin("*")
+@RequiredArgsConstructor
 public class MovimientoInventarioController {
 
-    @Autowired
-    private MovimientoInventarioService movimientoService;
+    private final MovimientoInventarioService movimientoService;
+    private final MovimientoOrquestadorService orquestadorService;
+    private final SecurityContextService securityContextService;
+
+    // ✅ Nuevo endpoint unificado para movimientos atómicos (DT2)
+    @PostMapping("/ejecutar")
+    public ResponseEntity<MovimientoResponseDTO> ejecutarMovimiento(
+            @Valid @RequestBody MovimientoRequestDTO request,
+            Authentication authentication) {
+        String username = authentication != null ? authentication.getName() : securityContextService.obtenerUsernameActual();
+        log.info("Petición de movimiento atómico recibida de usuario: {}", username);
+        MovimientoResponseDTO response = orquestadorService.ejecutarMovimiento(request, username);
+        return ResponseEntity.ok(response);
+    }
 
     // Obtener todos los movimientos
     @GetMapping
     public List<MovimientoInventario> obtenerTodos() {
         return movimientoService.obtenerTodos();
+    }
+
+    // Obtener todos los movimientos paginados (DT9)
+    @GetMapping("/paginado")
+    public ResponseEntity<Page<MovimientoInventario>> obtenerTodosPaginado(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+        Sort sort = "asc".equalsIgnoreCase(direction) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return ResponseEntity.ok(movimientoService.obtenerTodosPaginado(pageable));
     }
 
     // Obtener un movimiento por ID
@@ -37,9 +75,11 @@ public class MovimientoInventarioController {
                          .orElse(ResponseEntity.notFound().build());
     }
 
-    // Crear un nuevo movimiento
+    // Crear un nuevo movimiento (legacy, preferir /ejecutar)
+    @Deprecated
     @PostMapping
     public MovimientoInventario crearMovimiento(@RequestBody MovimientoInventario movimiento) {
+        log.info("Creando cabecera de movimiento legacy");
         return movimientoService.guardar(movimiento);
     }
 

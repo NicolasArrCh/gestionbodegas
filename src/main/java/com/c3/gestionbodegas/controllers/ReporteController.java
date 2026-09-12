@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,19 +15,19 @@ import com.c3.gestionbodegas.services.BodegaService;
 import com.c3.gestionbodegas.services.MovimientoInventarioService;
 import com.c3.gestionbodegas.services.ProductoService;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/reportes")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class ReporteController {
 
-    @Autowired
-    private BodegaService bodegaService;
-
-    @Autowired
-    private ProductoService productoService;
-
-    @Autowired
-    private MovimientoInventarioService movimientoService;
+    private final BodegaService bodegaService;
+    private final ProductoService productoService;
+    private final MovimientoInventarioService movimientoService;
 
     /**
      * Endpoint de reporte general del sistema
@@ -64,8 +63,7 @@ public class ReporteController {
             reporte.put("totalMovimientos", movimientoService.obtenerTodos().size());
 
         } catch (Exception e) {
-            System.err.println("❌ Error generando reporte: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error generando reporte: {}", e.getMessage(), e);
             
             // Retornar reporte con valores por defecto en caso de error
             reporte.put("error", "No se pudieron cargar algunos datos del reporte");

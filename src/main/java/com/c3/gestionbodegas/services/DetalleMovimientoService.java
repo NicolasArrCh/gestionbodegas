@@ -3,9 +3,6 @@ package com.c3.gestionbodegas.services;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,26 +15,19 @@ import com.c3.gestionbodegas.repository.DetalleMovimientoRepository;
 import com.c3.gestionbodegas.repository.MovimientoInventarioRepository;
 import com.c3.gestionbodegas.repository.ProductoRepository;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class DetalleMovimientoService {
 
-    @Autowired
-    private DetalleMovimientoRepository detalleMovimientoRepository;
-
-    @Autowired
-    private ProductoRepository productoRepository;
-
-    @Autowired
-    private MovimientoInventarioRepository movimientoInventarioRepository;
-
-    @Autowired
-    private IntentoFallidoService intentoFallidoService;
-
-    @PersistenceContext
-    private EntityManager entityManager;
+    private final DetalleMovimientoRepository detalleMovimientoRepository;
+    private final ProductoRepository productoRepository;
+    private final MovimientoInventarioRepository movimientoInventarioRepository;
+    private final IntentoFallidoService intentoFallidoService;
+    private final SecurityContextService securityContextService;
 
     // Obtener todos
     public List<DetalleMovimiento> obtenerTodos() {
@@ -102,7 +92,7 @@ public class DetalleMovimientoService {
     private void registrarIntentoFallido(MovimientoInventario movimiento, Producto producto, 
                                          Integer cantidad, String razonError) {
         try {
-            Usuario usuarioActual = obtenerUsuarioActual();
+            Usuario usuarioActual = securityContextService.obtenerUsuarioActual();
             
             intentoFallidoService.registrarIntentoFallido(
                     convertirTipoMovimiento(movimiento.getTipo()),
@@ -115,32 +105,8 @@ public class DetalleMovimientoService {
                     null
             );
         } catch (Exception e) {
-            System.err.println("⚠️ Error registrando intento fallido: " + e.getMessage());
+            log.error("Error registrando intento fallido: {}", e.getMessage(), e);
         }
-    }
-
-    /**
-     * Obtiene el usuario actual del contexto de seguridad
-     */
-    private Usuario obtenerUsuarioActual() {
-        try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication != null && authentication.isAuthenticated()) {
-                String username = authentication.getName();
-                // Retornar usuario dummy para no romper el flujo
-                Usuario usuario = new Usuario();
-                usuario.setId(1);
-                usuario.setUsername(username);
-                return usuario;
-            }
-        } catch (Exception e) {
-            System.err.println("Error obteniendo usuario actual: " + e.getMessage());
-        }
-        
-        Usuario usuario = new Usuario();
-        usuario.setId(1);
-        usuario.setUsername("sistema");
-        return usuario;
     }
 
     /**
@@ -157,7 +123,7 @@ public class DetalleMovimientoService {
     /**
      * Valida TODAS las reglas de negocio ANTES de hacer cambios
      */
-    private void validarMovimiento(MovimientoInventario movimiento, Producto productoOrigen, Integer cantidad) {
+    public void validarMovimiento(MovimientoInventario movimiento, Producto productoOrigen, Integer cantidad) {
         // 1️⃣ Validar que el producto pertenece a la bodega de origen (para SALIDA y TRANSFERENCIA)
         if ((movimiento.getTipo() == MovimientoInventario.TipoMovimiento.SALIDA || 
              movimiento.getTipo() == MovimientoInventario.TipoMovimiento.TRANSFERENCIA) &&
@@ -191,7 +157,7 @@ public class DetalleMovimientoService {
     /**
      * Aplica la operación SALIDA (disminuir stock en bodega origen)
      */
-    private void aplicarSalida(MovimientoInventario movimiento, Producto productoOrigen, Integer cantidad) {
+    public void aplicarSalida(MovimientoInventario movimiento, Producto productoOrigen, Integer cantidad) {
         if (productoOrigen.getStock() == null) productoOrigen.setStock(0);
         productoOrigen.setStock(productoOrigen.getStock() - cantidad);
         productoRepository.save(productoOrigen);
@@ -200,7 +166,7 @@ public class DetalleMovimientoService {
     /**
      * Aplica la operación ENTRADA (aumentar stock en bodega destino)
      */
-    private void aplicarEntrada(MovimientoInventario movimiento, Producto productoOrigen, Integer cantidad) {
+    public void aplicarEntrada(MovimientoInventario movimiento, Producto productoOrigen, Integer cantidad) {
         if (movimiento.getBodegaDestino() != null) {
             Producto productoDestino = productoRepository.findByNombreAndBodega(productoOrigen.getNombre(), movimiento.getBodegaDestino());
             if (productoDestino != null) {
@@ -223,7 +189,7 @@ public class DetalleMovimientoService {
     /**
      * Aplica la operación TRANSFERENCIA (disminuir en origen, aumentar en destino)
      */
-    private void aplicarTransferencia(MovimientoInventario movimiento, Producto productoOrigen, Integer cantidad) {
+    public void aplicarTransferencia(MovimientoInventario movimiento, Producto productoOrigen, Integer cantidad) {
         // Disminuir en bodega origen
         if (productoOrigen.getStock() == null) productoOrigen.setStock(0);
         productoOrigen.setStock(productoOrigen.getStock() - cantidad);
@@ -248,8 +214,6 @@ public class DetalleMovimientoService {
             }
         }
     }
-
-    // Resto de métodos sin cambios...
     
     public DetalleMovimiento actualizar(Integer id, DetalleMovimiento detalleMovimiento) {
         Optional<DetalleMovimiento> existente = detalleMovimientoRepository.findById(id);

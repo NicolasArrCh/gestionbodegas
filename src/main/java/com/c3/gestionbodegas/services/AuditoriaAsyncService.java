@@ -1,6 +1,5 @@
 package com.c3.gestionbodegas.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -10,11 +9,15 @@ import com.c3.gestionbodegas.entities.Auditoria;
 import com.c3.gestionbodegas.entities.Usuario;
 import com.c3.gestionbodegas.repository.AuditoriaRepository;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class AuditoriaAsyncService {
 
-    @Autowired
-    private AuditoriaRepository auditoriaRepository;
+    private final AuditoriaRepository auditoriaRepository;
 
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -30,9 +33,9 @@ public class AuditoriaAsyncService {
                     .build();
             
             auditoriaRepository.save(auditoria);
-            System.out.println("✅ Auditoría " + tipo + " registrada para: " + entidad);
+            log.debug("Auditoría {} registrada para: {}", tipo, entidad);
         } catch (Exception e) {
-            System.err.println("❌ Error al guardar auditoría: " + e.getMessage());
+            log.error("Error al guardar auditoría: {}", e.getMessage(), e);
         }
     }
 }

@@ -3,7 +3,8 @@ package com.c3.gestionbodegas.services;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.c3.gestionbodegas.entities.Auditoria;
@@ -11,15 +12,24 @@ import com.c3.gestionbodegas.entities.Auditoria.TipoOperacion;
 import com.c3.gestionbodegas.entities.Usuario;
 import com.c3.gestionbodegas.repository.AuditoriaRepository;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class AuditoriaService {
 
-    @Autowired
-    private AuditoriaRepository auditoriaRepository;
+    private final AuditoriaRepository auditoriaRepository;
 
     // Obtener todas las auditorías
     public List<Auditoria> obtenerTodas() {
         return auditoriaRepository.findAll();
+    }
+
+    // Obtener auditorías paginadas
+    public Page<Auditoria> obtenerTodasPaginado(Pageable pageable) {
+        return auditoriaRepository.findAll(pageable);
     }
 
     // Guardar una nueva auditoría

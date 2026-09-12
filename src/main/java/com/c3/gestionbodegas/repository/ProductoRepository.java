@@ -2,6 +2,8 @@ package com.c3.gestionbodegas.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -22,6 +24,9 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer>{
 
     // Buscar productos con stock mayor a X (útil para listar productos disponibles)
     List<Producto> findByStockGreaterThan(Integer cantidad);
+
+    // Buscar productos disponibles paginados
+    Page<Producto> findByStockGreaterThan(Integer cantidad, Pageable pageable);
 
     // Verificar si ya existe un producto con ese nombre
     boolean existsByNombre(String nombre);

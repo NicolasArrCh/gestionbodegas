@@ -3,21 +3,31 @@ package com.c3.gestionbodegas.services;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.c3.gestionbodegas.entities.Bodega;
 import com.c3.gestionbodegas.repository.BodegaRepository;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class BodegaService {
 
-    @Autowired
-    private BodegaRepository bodegaRepository;
+    private final BodegaRepository bodegaRepository;
 
     // Obtener todas las bodegas
     public List<Bodega> obtenerTodas() {
         return bodegaRepository.findAll();
+    }
+
+    // Obtener bodegas paginadas
+    public Page<Bodega> obtenerTodasPaginado(Pageable pageable) {
+        return bodegaRepository.findAll(pageable);
     }
 
     // Buscar una bodega por su ID
@@ -27,11 +37,13 @@ public class BodegaService {
 
     // Guardar o actualizar una bodega
     public Bodega guardar(Bodega bodega) {
+        log.info("Guardando bodega: {}", bodega.getNombre());
         return bodegaRepository.save(bodega);
     }
 
     // Eliminar una bodega por su ID
     public void eliminar(Integer id) {
+        log.info("Eliminando bodega con ID: {}", id);
         bodegaRepository.deleteById(id);
     }
 

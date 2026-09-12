@@ -2,53 +2,119 @@ package com.c3.gestionbodegas.controllers;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.c3.gestionbodegas.dto.mapper.ProductoMapper;
+import com.c3.gestionbodegas.dto.producto.ProductoRequestDTO;
+import com.c3.gestionbodegas.dto.producto.ProductoResponseDTO;
+import com.c3.gestionbodegas.entities.Bodega;
 import com.c3.gestionbodegas.entities.Producto;
+import com.c3.gestionbodegas.exception.ResourceNotFoundException;
+import com.c3.gestionbodegas.repository.BodegaRepository;
 import com.c3.gestionbodegas.services.ProductoService;
 
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/productos")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class ProductoController {
 
-    @Autowired
-    private ProductoService productoService;
+    private final ProductoService productoService;
+    private final ProductoMapper productoMapper;
+    private final BodegaRepository bodegaRepository;
 
-    // ✅ Obtener todos los productos
+    // ✅ Obtener todos los productos (DT3)
     @GetMapping
-    public ResponseEntity<List<Producto>> obtenerTodos() {
+    public ResponseEntity<List<ProductoResponseDTO>> obtenerTodos() {
         List<Producto> productos = productoService.obtenerTodos();
-        return ResponseEntity.ok(productos);
+        return ResponseEntity.ok(productoMapper.toDTOList(productos));
+    }
+
+    // ✅ Obtener productos paginados (DT9)
+    @GetMapping("/paginado")
+    public ResponseEntity<Page<ProductoResponseDTO>> obtenerTodosPaginado(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction) {
+        Sort sort = "desc".equalsIgnoreCase(direction) ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Producto> productos = productoService.obtenerTodosPaginado(pageable);
+        return ResponseEntity.ok(productos.map(productoMapper::toDTO));
     }
 
     // ✅ Obtener un producto por ID
     @GetMapping("/{id}")
-    public ResponseEntity<Producto> obtenerPorId(@PathVariable Integer id) {
+    public ResponseEntity<ProductoResponseDTO> obtenerPorId(@PathVariable Integer id) {
         Producto producto = productoService.obtenerPorId(id);
         if (producto == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(producto);
+        return ResponseEntity.ok(productoMapper.toDTO(producto));
     }
 
-    // ✅ Crear un nuevo producto
+    // ✅ Crear un nuevo producto usando DTO (DT3)
     @PostMapping
-    public ResponseEntity<Producto> crear(@RequestBody Producto producto) {
-        Producto nuevo = productoService.guardar(producto);
-        return ResponseEntity.ok(nuevo);
+    public ResponseEntity<ProductoResponseDTO> crear(@Valid @RequestBody ProductoRequestDTO dto) {
+        Bodega bodega = null;
+        if (dto.getBodegaId() != null) {
+            bodega = bodegaRepository.findById(dto.getBodegaId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Bodega no encontrada con ID: " + dto.getBodegaId()));
+        }
+
+        Producto nuevo = Producto.builder()
+                .nombre(dto.getNombre())
+                .categoria(dto.getCategoria())
+                .stock(dto.getStock())
+                .precio(dto.getPrecio())
+                .bodega(bodega)
+                .build();
+
+        Producto guardado = productoService.guardar(nuevo);
+        return ResponseEntity.ok(productoMapper.toDTO(guardado));
     }
 
-    // ✅ Actualizar un producto existente
+    // ✅ Actualizar un producto existente usando DTO (DT3)
     @PutMapping("/{id}")
-    public ResponseEntity<Producto> actualizar(@PathVariable Integer id, @RequestBody Producto producto) {
-        Producto actualizado = productoService.actualizar(id, producto);
+    public ResponseEntity<ProductoResponseDTO> actualizar(@PathVariable Integer id, @Valid @RequestBody ProductoRequestDTO dto) {
+        Bodega bodega = null;
+        if (dto.getBodegaId() != null) {
+            bodega = bodegaRepository.findById(dto.getBodegaId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Bodega no encontrada con ID: " + dto.getBodegaId()));
+        }
+
+        Producto datosActualizados = Producto.builder()
+                .nombre(dto.getNombre())
+                .categoria(dto.getCategoria())
+                .stock(dto.getStock())
+                .precio(dto.getPrecio())
+                .bodega(bodega)
+                .build();
+
+        Producto actualizado = productoService.actualizar(id, datosActualizados);
         if (actualizado == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(actualizado);
+        return ResponseEntity.ok(productoMapper.toDTO(actualizado));
     }
 
     // ✅ Eliminar un producto
@@ -63,26 +129,26 @@ public class ProductoController {
 
     // ✅ Buscar producto por nombre exacto
     @GetMapping("/nombre/{nombre}")
-    public ResponseEntity<Producto> buscarPorNombre(@PathVariable String nombre) {
+    public ResponseEntity<ProductoResponseDTO> buscarPorNombre(@PathVariable String nombre) {
         Producto producto = productoService.buscarPorNombre(nombre);
         if (producto == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(producto);
+        return ResponseEntity.ok(productoMapper.toDTO(producto));
     }
 
     // ✅ Buscar productos por categoría (contiene, sin importar mayúsculas)
     @GetMapping("/categoria/{categoria}")
-    public ResponseEntity<List<Producto>> buscarPorCategoria(@PathVariable String categoria) {
+    public ResponseEntity<List<ProductoResponseDTO>> buscarPorCategoria(@PathVariable String categoria) {
         List<Producto> productos = productoService.buscarPorCategoria(categoria);
-        return ResponseEntity.ok(productos);
+        return ResponseEntity.ok(productoMapper.toDTOList(productos));
     }
 
     // ✅ Buscar productos con stock menor a X (para alertas)
     @GetMapping("/stock-bajo/{cantidad}")
-    public ResponseEntity<List<Producto>> buscarPorStockMenorA(@PathVariable Integer cantidad) {
+    public ResponseEntity<List<ProductoResponseDTO>> buscarPorStockMenorA(@PathVariable Integer cantidad) {
         List<Producto> productos = productoService.buscarPorStockBajo(cantidad);
-        return ResponseEntity.ok(productos);
+        return ResponseEntity.ok(productoMapper.toDTOList(productos));
     }
 
     // ✅ Verificar si existe un producto por nombre

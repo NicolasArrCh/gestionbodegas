@@ -3,29 +3,48 @@ package com.c3.gestionbodegas.controllers;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.c3.gestionbodegas.entities.Auditoria;
-import com.c3.gestionbodegas.entities.Usuario;
 import com.c3.gestionbodegas.entities.Auditoria.TipoOperacion;
+import com.c3.gestionbodegas.entities.Usuario;
 import com.c3.gestionbodegas.services.AuditoriaService;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/auditorias")
-@CrossOrigin(origins = "*") // Permite peticiones desde cualquier origen (útil para frontends como React o Angular)
+@CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class AuditoriaController {
 
-    @Autowired
-    private AuditoriaService auditoriaService;
+    private final AuditoriaService auditoriaService;
 
-    // ✅ Obtener todas las auditorías
+    // ✅ Obtener todas las auditorías (completa para compatibilidad)
     @GetMapping
     public ResponseEntity<List<Auditoria>> obtenerTodas() {
         List<Auditoria> auditorias = auditoriaService.obtenerTodas();
         return ResponseEntity.ok(auditorias);
+    }
+
+    // ✅ Obtener auditorías paginadas
+    @GetMapping("/paginado")
+    public ResponseEntity<Page<Auditoria>> obtenerTodasPaginado(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "fechaHora") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+        Sort sort = "asc".equalsIgnoreCase(direction) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return ResponseEntity.ok(auditoriaService.obtenerTodasPaginado(pageable));
     }
 
     // ✅ Guardar una nueva auditoría

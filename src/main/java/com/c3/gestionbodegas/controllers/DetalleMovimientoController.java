@@ -2,7 +2,6 @@ package com.c3.gestionbodegas.controllers;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -19,13 +18,17 @@ import com.c3.gestionbodegas.entities.MovimientoInventario;
 import com.c3.gestionbodegas.entities.Producto;
 import com.c3.gestionbodegas.services.DetalleMovimientoService;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/detalle-movimientos")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 public class DetalleMovimientoController {
 
-    @Autowired
-    private DetalleMovimientoService detalleMovimientoService;
+    private final DetalleMovimientoService detalleMovimientoService;
 
     // Obtener todos los detalles
     @GetMapping
@@ -52,6 +55,7 @@ public class DetalleMovimientoController {
             DetalleMovimiento nuevo = detalleMovimientoService.guardar(detalleMovimiento);
             return ResponseEntity.ok(nuevo);
         } catch (IllegalArgumentException ex) {
+            log.warn("Error en creación de detalle movimiento: {}", ex.getMessage());
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
     }

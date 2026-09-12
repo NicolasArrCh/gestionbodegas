@@ -3,7 +3,8 @@ package com.c3.gestionbodegas.services;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,18 +14,25 @@ import com.c3.gestionbodegas.exception.CapacidadExcedidaException;
 import com.c3.gestionbodegas.repository.BodegaRepository;
 import com.c3.gestionbodegas.repository.ProductoRepository;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class ProductoService {
 
-    @Autowired
-    private ProductoRepository productoRepository;
-    
-    @Autowired
-    private BodegaRepository bodegaRepository;
+    private final ProductoRepository productoRepository;
+    private final BodegaRepository bodegaRepository;
 
     // Obtener todos los productos (solo los disponibles con stock > 0)
     public List<Producto> obtenerTodos() {
         return productoRepository.findByStockGreaterThan(0);
+    }
+
+    // Obtener todos los productos paginados (con stock > 0)
+    public Page<Producto> obtenerTodosPaginado(Pageable pageable) {
+        return productoRepository.findByStockGreaterThan(0, pageable);
     }
 
     // Buscar un producto por su ID
@@ -34,6 +42,7 @@ public class ProductoService {
 
     // Guardar o actualizar un producto
     public Producto guardar(Producto producto) {
+        log.info("Guardando producto: {}", producto.getNombre());
         // Validar capacidad de la bodega antes de guardar
         validarCapacidadBodega(producto, null);
         return productoRepository.save(producto);
@@ -41,12 +50,13 @@ public class ProductoService {
 
     // Eliminar un producto por su ID
     public boolean eliminar(Integer id) {
-    if (productoRepository.existsById(id)) {
-        productoRepository.deleteById(id);
-        return true;
+        log.info("Eliminando producto con ID: {}", id);
+        if (productoRepository.existsById(id)) {
+            productoRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
-    return false;
-}
 
     // Buscar producto por nombre exacto
     public Producto buscarPorNombre(String nombre) {
@@ -74,11 +84,12 @@ public class ProductoService {
     }
 
     public Producto obtenerPorId(Integer id) {
-    return productoRepository.findById(id).orElse(null);
-}
+        return productoRepository.findById(id).orElse(null);
+    }
 
     @Transactional
     public Producto actualizar(Integer id, Producto producto) {
+        log.info("Actualizando producto con ID: {}", id);
         return productoRepository.findById(id).map(p -> {
             // Validar capacidad si cambia el stock o la bodega
             validarCapacidadBodega(producto, id);

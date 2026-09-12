@@ -1,4 +1,4 @@
--- Datos de ejemplo para pruebas
+-- Datos de ejemplo para desarrollo local (H2 / PostgreSQL compatible)
 
 -- ============================================================
 -- USUARIOS
@@ -36,19 +36,18 @@ INSERT INTO productos (id, nombre, categoria, stock, precio, bodega_id) VALUES
 -- ============================================================
 -- MOVIMIENTOS DE INVENTARIO
 -- ============================================================
-INSERT INTO movimientos_inventario (id, tipo, usuario_id, bodega_origen_id, bodega_destino_id) VALUES
-(1, 'ENTRADA', 1, NULL, 1),
-(2, 'SALIDA', 2, 2, NULL),
-(3, 'TRANSFERENCIA', 3, 1, 3),
-(4, 'ENTRADA', 1, NULL, 4),
-(5, 'SALIDA', 5, 5, NULL),
-(6, 'TRANSFERENCIA', 2, 2, 1);
+INSERT INTO movimientos_inventario (id, fecha, tipo, usuario_id, bodega_origen_id, bodega_destino_id) VALUES
+(1, CURRENT_TIMESTAMP, 'ENTRADA', 1, NULL, 1),
+(2, CURRENT_TIMESTAMP, 'SALIDA', 2, 2, NULL),
+(3, CURRENT_TIMESTAMP, 'TRANSFERENCIA', 3, 1, 3),
+(4, CURRENT_TIMESTAMP, 'ENTRADA', 1, NULL, 4),
+(5, CURRENT_TIMESTAMP, 'SALIDA', 5, 5, NULL),
+(6, CURRENT_TIMESTAMP, 'TRANSFERENCIA', 2, 2, 1);
 
 -- ============================================================
 -- DETALLES DE MOVIMIENTOS
 -- ============================================================
-INSERT INTO detalle_movimiento (id, movimiento_id, producto_id, cantidad)
-VALUES
+INSERT INTO detalle_movimiento (id, movimiento_id, producto_id, cantidad) VALUES
 (1, 1, 1, 20),
 (2, 1, 2, 15),
 (3, 2, 3, 10),
@@ -61,39 +60,9 @@ VALUES
 -- ============================================================
 -- AUDITORÍA
 -- ============================================================
-INSERT INTO auditoria (id, tipo_operacion, usuario_id, entidad_afectada, valor_anterior, valor_nuevo) VALUES
-(1, 'INSERT', 1, 'Bodega', NULL, '{"id":1,"nombre":"Bodega Central","capacidad":5000}'),
-(2, 'UPDATE', 2, 'Producto', '{"id":1,"stock":15}', '{"id":1,"stock":35}'),
-(3, 'INSERT', 1, 'Producto', NULL, '{"id":6,"nombre":"Laptop Dell XPS 15","precio":3500000}'),
-(4, 'UPDATE', 3, 'MovimientoInventario', '{"id":3,"tipo":"SALIDA"}', '{"id":3,"tipo":"TRANSFERENCIA"}'),
-(5, 'INSERT', 5, 'MovimientoInventario', NULL, '{"id":6,"tipo":"TRANSFERENCIA"}')
-
--- Actualizar usuarios existentes
-UPDATE usuarios 
-SET fecha_creacion = NOW(), 
-    fecha_modificacion = NOW() 
-WHERE fecha_creacion IS NULL;
-
--- Actualizar bodegas existentes
-UPDATE bodegas 
-SET fecha_creacion = NOW(), 
-    fecha_modificacion = NOW() 
-WHERE fecha_creacion IS NULL;
-
--- Actualizar productos existentes
-UPDATE productos 
-SET fecha_creacion = NOW(), 
-    fecha_modificacion = NOW() 
-WHERE fecha_creacion IS NULL;
-
--- Actualizar movimientos existentes
-UPDATE movimientos_inventario 
-SET fecha_creacion = NOW(), 
-    fecha_modificacion = NOW() 
-WHERE fecha_creacion IS NULL;
-
--- Actualizar detalles existentes
-UPDATE detalle_movimiento 
-SET fecha_creacion = NOW(), 
-    fecha_modificacion = NOW() 
-WHERE fecha_creacion IS NULL;
+INSERT INTO auditoria (id, fecha_hora, tipo_operacion, usuario_id, entidad_afectada, valor_anterior, valor_nuevo) VALUES
+(1, CURRENT_TIMESTAMP, 'INSERT', 1, 'Bodega', NULL, '{"id":1,"nombre":"Bodega Central","capacidad":5000}'),
+(2, CURRENT_TIMESTAMP, 'UPDATE', 2, 'Producto', '{"id":1,"stock":15}', '{"id":1,"stock":35}'),
+(3, CURRENT_TIMESTAMP, 'INSERT', 1, 'Producto', NULL, '{"id":6,"nombre":"Laptop Dell XPS 15","precio":3500000}'),
+(4, CURRENT_TIMESTAMP, 'UPDATE', 3, 'MovimientoInventario', '{"id":3,"tipo":"SALIDA"}', '{"id":3,"tipo":"TRANSFERENCIA"}'),
+(5, CURRENT_TIMESTAMP, 'INSERT', 5, 'MovimientoInventario', NULL, '{"id":6,"tipo":"TRANSFERENCIA"}');

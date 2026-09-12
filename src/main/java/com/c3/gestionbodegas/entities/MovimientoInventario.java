@@ -21,12 +21,14 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "movimientos_inventario")
 @EntityListeners(AuditoriaListener.class) // ✅ ASEGURAR QUE ESTÁ ACTIVADO
 @Data
+@EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -36,8 +38,16 @@ public class MovimientoInventario extends Auditable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP", insertable = false, updatable = false)
-    private LocalDateTime fecha;
+    @Column(nullable = false)
+    @Builder.Default
+    private LocalDateTime fecha = LocalDateTime.now();
+
+    @jakarta.persistence.PrePersist
+    protected void onPrePersist() {
+        if (this.fecha == null) {
+            this.fecha = LocalDateTime.now();
+        }
+    }
 
     @NotNull(message = "Tipo es requerido")
     @Enumerated(EnumType.STRING)

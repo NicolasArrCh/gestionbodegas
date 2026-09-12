@@ -3,31 +3,31 @@ package com.c3.gestionbodegas.config;
 import java.util.Optional;
 
 import org.springframework.data.domain.AuditorAware;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+
+import com.c3.gestionbodegas.services.SecurityContextService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Implementación de AuditorAware para JPA Auditing.
  * Proporciona el nombre del usuario actual para los campos @CreatedBy y @LastModifiedBy.
  */
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class AuditorAwareImpl implements AuditorAware<String> {
+
+    private final SecurityContextService securityContextService;
 
     @Override
     public Optional<String> getCurrentAuditor() {
         try {
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-            if (authentication != null && authentication.isAuthenticated() 
-                && !"anonymousUser".equals(authentication.getPrincipal())) {
-                return Optional.of(authentication.getName());
-            }
+            return Optional.of(securityContextService.obtenerUsernameActual());
         } catch (Exception e) {
-            System.err.println("⚠️ Error obteniendo auditor actual: " + e.getMessage());
+            log.warn("Error obteniendo auditor actual: {}", e.getMessage());
+            return Optional.of("sistema");
         }
-
-        // Si no hay usuario autenticado, retornar "sistema" por defecto
-        return Optional.of("sistema");
     }
 }
